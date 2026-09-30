@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Runtime data (created on the Mini / dev box, never committed)
+*.db
+*.db-journal
+config.local.toml
+snapshots/
+drive.db
+
+# Model build artifacts (the exported .onnx in models/ IS committed;
+# raw downloaded weights are not)
+yolov8n.pt
+*.pt
+
+# Swift / Xcode
+.build/
+*.xcodeproj/
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

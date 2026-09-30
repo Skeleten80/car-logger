@@ -1,0 +1,9 @@
+python-can>=4.3
+# Phase 2: DBC signal decoding (opendbc-format .dbc files)
+cantools>=40
+# Phase 3: dashcam perception -- onnxruntime runs the exported YOLOv8n
+# model (on the M6 Mini via the CoreML execution provider -> Neural
+# Engine); opencv captures frames. The vision loop itself needs only
+# these two; model export needs requirements-export.txt.
+onnxruntime>=1.17
+opencv-python-headless>=4.8

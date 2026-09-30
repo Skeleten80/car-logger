@@ -1,0 +1,11 @@
+# Phase-3 model export only: run tools/export_models.py once per machine
+# (or copy models/yolov8n.onnx over). Not needed at runtime.
+#
+# NOTE: install torch first from the CPU index -- the default PyPI torch
+# pulls multi-GB CUDA wheels. On Apple Silicon this file isn't needed at
+# all: `pip install ultralytics onnx` resolves a native torch.
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+ultralytics
+onnx

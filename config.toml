@@ -1,0 +1,79 @@
+# car-logger phase-1 config. Copy to config.local.toml and edit; the logger
+# prefers config.local.toml when present so your edits survive updates.
+[bus]
+# Interface name for python-can:
+#   "pcan"    -> PEAK PCAN-USB (needs MacCAN PCBUSB driver on macOS)
+#   "kvaser"  -> Kvaser Leaf (needs MacCAN KvaserCAN driver on macOS)
+#   "slcan"   -> CANable w/ slcan firmware (serial device, no driver needed)
+#   "gs_usb"  -> CANable w/ candleLight firmware (no driver needed)
+#   "virtual" -> software loopback, no hardware (for testing on any machine)
+interface = "virtual"
+# Channel meaning depends on the interface:
+#   pcan:   "PCAN_USBBUS1"
+#   kvaser: 0
+#   slcan:  "/dev/cu.usbmodemXXXX"
+#   gs_usb: 0
+#   virtual: any string, e.g. "vcan0"
+channel = "vcan0"
+bitrate = 500000
+
+[mode]
+# "obd2"   -> poll standard OBD-II PIDs only (transmits 0x7DF requests)
+# "listen" -> raw bus capture only (fully passive, zero transmitted frames)
+# "both"   -> raw capture + OBD-II polling
+mode = "both"
+
+[obd2]
+# Standard SAE J1979 PIDs to poll: coolant, RPM, speed, throttle, fuel level
+pids = [5, 12, 13, 17, 47]
+poll_interval = 1.0
+response_timeout = 1.0
+
+[storage]
+path = "~/car-logger-data/drive.db"
+
+[decode]
+# DBC signal decoding (phase 2). Point at a .dbc file for the car, or a
+# directory of them (e.g. a sparse opendbc checkout). Empty = disabled;
+# the logger keeps capturing raw frames + OBD-II and the dash shows those.
+#
+# On the Mini, fetch opendbc like this:
+#   git clone --depth 1 --filter=blob:none --sparse \
+#       https://github.com/commaai/opendbc.git
+#   cd opendbc && git sparse-checkout set opendbc
+# then set dbc_path to the opendbc directory (or one .dbc file).
+dbc_path = ""
+# Label shown in the dash header, e.g. "2021 Toyota RAV4".
+vehicle = ""
+
+[dash]
+# Live dashboard server:  python -m carlogger.dash
+# host "0.0.0.0" lets a phone/laptop reach it over the car's Wi-Fi hotspot.
+host = "0.0.0.0"
+port = 8080
+
+[vision]
+# Dashcam perception (phase 3). Separate process: python -m carlogger.vision
+# Frames are captured, run through YOLOv8n, and detections are logged to the
+# vision_events table on the same clock as the CAN data, so video and bus
+# traffic can be correlated after the drive.
+enabled = false
+# Video source: camera index (0) for a USB dashcam, or a file path for testing.
+source = 0
+# ONNX model (exported by tools/export_models.py). Path relative to the
+# project root, or absolute.
+model = "models/yolov8n.onnx"
+# ONNX Runtime execution providers, in preference order. On the Mac Mini use
+# ["CoreMLExecutionProvider", "CPUExecutionProvider"] -- the CoreML EP runs
+# the model on the Neural Engine. On Linux only "CPUExecutionProvider" exists.
+providers = ["CPUExecutionProvider"]
+conf_threshold = 0.45
+# Frames per second to actually run inference on (a USB dashcam does 30 fps;
+# 4 fps is plenty for logging and keeps power/thermals sane in a hot car).
+target_fps = 4.0
+snapshot_dir = "~/car-logger-data/snapshots"
+# An "interesting" event (saves an annotated snapshot): a person at high
+# confidence, a large close vehicle, or any detection during hard braking.
+interesting_conf = 0.6
+large_box_fraction = 0.25
+decel_threshold = 4.0

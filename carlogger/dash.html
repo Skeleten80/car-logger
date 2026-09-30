@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CarDash — live vehicle telemetry</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0b0e14; color: #e6ebf4; font-family: -apple-system, "SF Pro Text", Inter, system-ui, sans-serif; padding: 16px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: .5px; }
+  #vehicle-label { color: #8b93a7; font-size: 13px; }
+  #conn-pill { margin-left: auto; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: #3a2b2b; color: #ff7b7b; }
+  #conn-pill.live { background: #1d3a2a; color: #4ade80; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .card { background: #131826; border: 1px solid #232c42; border-radius: 12px; padding: 14px; }
+  .card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8b93a7; margin-bottom: 6px; }
+  .card .value { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .card .unit { font-size: 13px; color: #8b93a7; font-weight: 400; margin-left: 4px; }
+  .bar { height: 8px; background: #232c42; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .bar > div { height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); border-radius: 4px; width: 0%; transition: width .3s; }
+  #rpm-card { grid-column: span 2; }
+  svg.gauge { width: 100%; height: 90px; display: block; margin-top: 4px; }
+  #rpm-canvas { width: 100%; height: 120px; display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #1d2434; font-variant-numeric: tabular-nums; }
+  th { color: #8b93a7; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .empty { color: #8b93a7; font-size: 13px; padding: 12px 4px; }
+  h2 { font-size: 14px; margin: 18px 0 8px; color: #c6cddd; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CarDash</h1>
+  <span id="vehicle-label"></span>
+  <span id="conn-pill">OFFLINE</span>
+</header>
+
+<div class="grid">
+  <div class="card" id="rpm-card">
+    <div class="label">Engine speed</div>
+    <div class="value"><span id="val-rpm">–</span><span class="unit">rpm</span></div>
+    <svg class="gauge" viewBox="0 0 200 90">
+      <path d="M 10 80 A 80 80 0 0 1 190 80" fill="none" stroke="#232c42" stroke-width="12" stroke-linecap="round"/>
+      <path id="rpm-arc" d="M 10 80 A 80 80 0 0 1 190 80" fill="none" stroke="#f87171" stroke-width="12" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+    </svg>
+  </div>
+  <div class="card">
+    <div class="label">Speed</div>
+    <div class="value"><span id="val-speed">–</span><span class="unit">km/h</span></div>
+  </div>
+  <div class="card">
+    <div class="label">Coolant</div>
+    <div class="value"><span id="val-coolant">–</span><span class="unit">°C</span></div>
+    <div class="bar"><div id="bar-coolant"></div></div>
+  </div>
+  <div class="card">
+    <div class="label">Throttle</div>
+    <div class="value"><span id="val-throttle">–</span><span class="unit">%</span></div>
+    <div class="bar"><div id="bar-throttle"></div></div>
+  </div>
+  <div class="card">
+    <div class="label">Fuel</div>
+    <div class="value"><span id="val-fuel">–</span><span class="unit">%</span></div>
+    <div class="bar"><div id="bar-fuel"></div></div>
+  </div>
+  <div class="card">
+    <div class="label">MAF</div>
+    <div class="value"><span id="val-maf">–</span><span class="unit">g/s</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">RPM history</div>
+  <canvas id="rpm-canvas"></canvas>
+</div>
+
+<h2>Vision</h2>
+<div class="card">
+  <div class="label">Latest detections <span id="vision-count" style="float:right"></span></div>
+  <div id="vision-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px"></div>
+  <img id="vision-snap" hidden style="width:100%;border-radius:8px;border:1px solid #232c42" alt="latest interesting snapshot">
+  <div id="vision-empty" class="empty">No vision events yet — run <span style="font-family:monospace">python -m carlogger.vision</span> with a camera or video file.</div>
+</div>
+
+<h2>Decoded CAN signals</h2>
+<div class="card">
+  <div id="signals-empty" class="empty">No DBC loaded — showing OBD-II only. Point [decode].dbc_path at a .dbc file to decode raw frames.</div>
+  <table id="signals-table" hidden>
+    <thead><tr><th>Signal</th><th>Value</th><th>Unit</th><th>Message</th></tr></thead>
+    <tbody id="signals-tbody"></tbody>
+  </table>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ARC_LEN = 251.3, RPM_MAX = 8000;
+const pill = $("conn-pill");
+
+function setLive(on) {
+  pill.textContent = on ? "● LIVE" : "● OFFLINE";
+  pill.classList.toggle("live", on);
+}
+
+function fmt(v, d=1) { return (v === null || v === undefined) ? "–" : Number(v).toFixed(d); }
+
+function updateGauges(obd2) {
+  $("val-rpm").textContent = fmt(obd2.rpm, 0);
+  $("val-speed").textContent = fmt(obd2.speed, 0);
+  $("val-coolant").textContent = fmt(obd2.coolant_temp, 0);
+  $("val-throttle").textContent = fmt(obd2.throttle, 1);
+  $("val-fuel").textContent = fmt(obd2.fuel_level, 1);
+  $("val-maf").textContent = fmt(obd2.maf, 2);
+  const frac = Math.min(1, (obd2.rpm || 0) / RPM_MAX);
+  $("rpm-arc").setAttribute("stroke-dashoffset", (ARC_LEN * (1 - frac)).toFixed(1));
+  $("bar-coolant").style.width = Math.min(100, ((obd2.coolant_temp || 0) / 130) * 100) + "%";
+  $("bar-throttle").style.width = Math.min(100, obd2.throttle || 0) + "%";
+  $("bar-fuel").style.width = Math.min(100, obd2.fuel_level || 0) + "%";
+}
+
+function updateSignals(signals) {
+  const names = Object.keys(signals).sort();
+  $("signals-empty").hidden = names.length > 0;
+  $("signals-table").hidden = names.length === 0;
+  const tb = $("signals-tbody");
+  tb.innerHTML = "";
+  for (const n of names) {
+    const s = signals[n];
+    const tr = document.createElement("tr");
+    const val = (typeof s.value === "number") ? s.value.toFixed(2) : "–";
+    tr.innerHTML = `<td>${n}</td><td>${val}</td><td>${s.unit || ""}</td><td>${s.message || ""}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+function updateVision(vision) {
+  vision = vision || {};
+  const dets = vision.detections || {};
+  const names = Object.keys(dets).sort();
+  $("vision-empty").hidden = names.length > 0;
+  $("vision-count").textContent = vision.events_last_minute
+    ? vision.events_last_minute + " events in the last minute" : "";
+  const chips = $("vision-chips");
+  chips.innerHTML = "";
+  for (const n of names) {
+    const d = dets[n];
+    const el = document.createElement("span");
+    el.style.cssText = "background:#1d3a2a;color:#4ade80;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px";
+    el.textContent = `${n} ${(d.confidence * 100).toFixed(0)}%`;
+    chips.appendChild(el);
+  }
+  const snap = $("vision-snap");
+  if (vision.last_snapshot) {
+    const url = "/snapshots/" + encodeURIComponent(vision.last_snapshot);
+    if (snap.getAttribute("src") !== url) snap.setAttribute("src", url);
+    snap.hidden = false;
+  } else {
+    snap.hidden = true;
+  }
+}
+
+function drawHistory(samples) {
+  const cv = $("rpm-canvas"), ctx = cv.getContext("2d");
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== w * 2) { cv.width = w * 2; cv.height = h * 2; }
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  if (samples.length < 2) return;
+  const vals = samples.map(s => s[1]);
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = Math.max(1, hi - lo);
+  ctx.strokeStyle = "#f87171"; ctx.lineWidth = 2; ctx.beginPath();
+  samples.forEach((s, i) => {
+    const x = (i / (samples.length - 1)) * w;
+    const y = h - 6 - ((s[1] - lo) / span) * (h - 12);
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.stroke();
+  ctx.fillStyle = "#8b93a7"; ctx.font = "11px system-ui";
+  ctx.fillText(`${hi.toFixed(0)} rpm`, 6, 14);
+  ctx.fillText(`${lo.toFixed(0)} rpm`, 6, h - 6);
+}
+
+const es = new EventSource("/api/live");
+es.onopen = () => setLive(true);
+es.onerror = () => setLive(false);
+es.onmessage = e => {
+  setLive(true);
+  const d = JSON.parse(e.data);
+  updateGauges(d.obd2 || {});
+  updateSignals(d.signals || {});
+  updateVision(d.vision || {});
+};
+
+fetch("/api/info").then(r => r.json()).then(info => {
+  $("vehicle-label").textContent = info.vehicle || (info.dbc_files.length ? info.dbc_files.length + " DBC file(s)" : "OBD-II only");
+});
+setInterval(() => {
+  fetch("/api/history?signal=rpm&limit=240").then(r => r.json()).then(h => drawHistory(h.samples));
+}, 3000);
+</script>
+</body>
+</html>
