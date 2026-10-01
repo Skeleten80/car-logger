@@ -71,6 +71,16 @@ status pill. Open `CarDash/Package.swift` in Xcode, ⌘R, and point it at the
 Mini (`http://mini.local:8080` or the hotspot IP). It consumes the same
 `/api/live` SSE stream as the web dash — no extra server work needed.
 
+No car hardware handy? `tools/demo_db.py` seeds a ~2-minute fake drive
+(OBD-II sweep, decoded signals, vision detections) into the database, so
+the web dash and CarDash have lively data to show while you experiment:
+
+    python3 tools/demo_db.py   # writes ~/car-logger-data/drive.db
+    python3 -m carlogger.dash
+
+`--seconds`, `--hz`, `--db`, and `--seed` tune the drive; the same seed
+always produces the same drive.
+
 ## Dashcam perception (phase 3)
 
 `python -m carlogger.vision` (separate process; set `[vision] enabled = true`
