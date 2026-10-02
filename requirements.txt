@@ -1,4 +1,7 @@
 python-can>=4.3
+# K-Line poller (carlogger/kline.py): ELM327 ISO 9141-2 for the Aristo V300.
+# pip package name is `obd`, imported as `import obd`.
+obd>=0.7
 # Phase 2: DBC signal decoding (opendbc-format .dbc files)
 cantools>=40
 # Phase 3: dashcam perception -- onnxruntime runs the exported YOLOv8n

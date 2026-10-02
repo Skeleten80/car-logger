@@ -1,0 +1,301 @@
+# =============================================================================
+# Aristo V300 (JZS161) vehicle profile for car-logger
+# =============================================================================
+# HOW TO READ THIS FILE
+# Every protocol claim carries a `confidence` field:
+#   high   — corroborated by ECU pinout documentation + owner verification
+#   medium — strong forum consensus, single-source, or inferred from Toyota convention
+#   verify — NOT established; must be confirmed on Mathias's car before use
+# Nothing in here was measured on his car. The verification procedure in
+# `diagnostics.verification_procedure` is the path from this file to truth.
+# =============================================================================
+
+vehicle:
+  make: Toyota
+  model: Aristo V300
+  chassis: JZS161
+  market: JDM
+  years: "1997-2004"
+  engine: 2JZ-GTE 3.0L twin-turbo VVTi inline-6
+  engine_note: Stock sequential turbo setup. ~280 PS factory (JDM gentlemen's agreement).
+  transmission: A340E 4-speed automatic
+  drivetrain: RWD
+  owner: Mathias
+  profile_version: 1
+  last_updated: "2026-10-02"
+
+# -----------------------------------------------------------------------------
+# Diagnostic connector
+# -----------------------------------------------------------------------------
+dlc3:
+  location: >-
+    Under-dash diagnostic connector ("dash plug"), driver side footwell area.
+    This is a JDM RHD car, so driver side = RIGHT side of the steering column.
+    Look above the kick panel / near the fuse box for a 16-pin trapezoid
+    connector, usually with a dust cap.
+  location_confidence: medium
+  location_note: >-
+    Toyota convention plus owner reports calling it the "dash plug". Not yet
+    confirmed visually on this car — see verification procedure step 1.
+
+  # Pin population as verified by a JZS161 owner on ClubLexus (measured at the
+  # dash plug): ONLY pins 4, 7, 13, 16 have contacts.
+  # Source: https://www.clublexus.com/forums/performance/584055-aristo-jobd-code-live-data-scanning-greddy-blitz-displays-3.html?ispreloading=1
+  populated_pins: [4, 7, 13, 16]
+  pinout:
+    - pin: 4
+      function: Chassis ground
+      confidence: high
+    - pin: 7
+      function: SIL — ISO 9141-2 K-Line (ECU diagnostic serial)
+      confidence: high
+      note: >-
+        ECU pin F60-11 (SIL) documented as "ISO 9141-2 K-Line" in the JZS161
+        wiring guide; owner traced the white/grey SIL wire from ECU to dash
+        connector pin 7.
+        Source: http://wilbo666.pbworks.com/w/page/42173082/2JZ-GTE%20VVTi%20JZS161%20Aristo%20Engine%20Wiring
+    - pin: 13
+      function: TC — Toyota proprietary (blink-code / tester trigger line)
+      confidence: medium
+      note: >-
+        Wired as TC per the JZS161 ECU diagram; on USDM equivalents this pin is
+        absent from the cabin plug. Do not treat as a standard OBD pin.
+    - pin: 16
+      function: Battery positive (+12V, always hot)
+      confidence: high
+  can_pins_present: false
+  can_pins_note: >-
+    Pins 6 and 14 (CAN-H / CAN-L) are NOT populated. There is no evidence of a
+    CAN bus on this chassis: inter-ECU links use Toyota serial (TRC+/ENG+ lines)
+    and body multiplex (MPX1/MPX2 = BEAN). If you probe 6/14 and find CAN, this
+    profile is wrong — update it.
+
+  # Separate from DLC3: the old-style Toyota diagnostic box in the engine bay
+  # ("diagnostic connector mounted on the side of the engine") with TE1/TE2/TC/
+  # WA/WB/IG- terminals for blink-code diagnostics. Useful as a fallback for
+  # TACH (IG- pin = ECU tach square wave, 0V-battery square wave).
+  engine_bay_connector:
+    present: true
+    confidence: medium
+    note: >-
+      Carries TACH on IG- (square wave, frequency ~ RPM) and TC/WA/WB for blink
+      codes. Fallback RPM source if K-Line polling proves too slow.
+
+# -----------------------------------------------------------------------------
+# Diagnostic protocol
+# -----------------------------------------------------------------------------
+diagnostics:
+  protocol: ISO 9141-2 K-Line (JOBD)
+  protocol_confidence: high
+  transport:
+    pin: 7
+    baud: 10400
+    init: "5-baud init or fast init (ELM327 handles both with ATSP3)"
+    elm327_protocol_setting: ATSP3
+  notes:
+    - >-
+      This is NOT CAN. The generic car-logger CAN path (0x7DF polling,
+      raw CAN capture, DBC decode) does NOT apply to this car — a CAN-only
+      adapter (CANable / PCAN-USB / Kvaser) cannot talk to the engine ECU.
+    - >-
+      Phase-1 interface for this car is a USB ELM327-compatible adapter
+      (STN-based e.g. OBDLink EX, or genuine-chip ELM327 v1.5) driven from
+      Python over serial (python-OBD or raw AT commands). K-Line tops out
+      around 5-10 PID reads/sec — plan the poll list accordingly.
+    - >-
+      DTCs via SAE Mode 03 / Mode 07 should work over K-Line. VIN via Mode 09
+      may not respond on JDM ECUs — verify, don't assume.
+    - >-
+      Toyota extended PIDs (trans temp, MAP/boost, etc.) are ECU-specific.
+      A cheap Toyota Techstream + Mini-VCI cable is the independent cross-check
+      for what the ECU actually exposes.
+
+  verification_procedure:
+    - step: 1
+      title: Find the DLC3
+      action: >-
+        Driver footwell (RHD = right side), above the kick panel near the fuse
+        box. Identify the 16-pin trapezoid connector, remove the dust cap,
+        photograph it.
+      pass: Connector found and photographed.
+    - step: 2
+      title: Confirm pin population
+      action: >-
+        Key OFF. Visually (or with a pick) confirm which cavities have metal
+        contacts. Expect ONLY 4, 7, 13, 16.
+      pass: Contacts present on 4/7/13/16; cavities 6 and 14 EMPTY (no CAN).
+      fail_action: If 6/14 are populated, stop — this car differs from the profile; update populated_pins and re-evaluate for CAN.
+    - step: 3
+      title: Power and ground sanity
+      action: >-
+        Multimeter: pin 16 to pin 4 should read battery voltage (~12.6V key
+        off, ~14V running). Pin 4 to chassis should read ~0 ohms.
+      pass: ~12V+ on 16, solid ground on 4.
+    - step: 4
+      title: K-Line alive check
+      action: >-
+        Key ON, engine OFF. Plug in any ELM327-compatible adapter and a phone
+        app (Torque / OBD Fusion). Set protocol to ISO 9141-2 if the app allows
+        manual selection. Attempt to connect and read RPM (should read 0) and
+        coolant temp.
+      pass: Adapter connects, RPM and coolant read sane values.
+      fail_action: >-
+        Try a Toyota Techstream + Mini-VCI cable as an independent check before
+        concluding the port is dead — some ELM327 clones fail K-Line init.
+    - step: 5
+      title: PID sweep
+      action: >-
+        From the Mini (or laptop), run the PID sweep script against the
+        wishlist below. Record which Mode-01 PIDs respond and which don't.
+        Note response latency per PID.
+      pass: >-
+        Core PIDs (RPM, speed, coolant, throttle) respond. Wishlist updated
+        with actual yes/no per PID.
+    - step: 6
+      title: DTC round-trip
+      action: >-
+        Read DTCs via Mode 03 (expect none / stored history). Do NOT clear
+        codes unless diagnosing a known fault — clearing wipes freeze-frame
+        and readiness data.
+      pass: Mode 03 returns a valid (possibly empty) code list.
+    - step: 7
+      title: Lock the profile
+      action: >-
+        Update this file: set location_confidence to high, fill in the PID
+        wishlist results, note the adapter model that worked. Commit the change.
+      pass: profile.yaml matches the car.
+
+# -----------------------------------------------------------------------------
+# Phase-1 PID / signal wishlist (SAE Mode 01 unless noted)
+# status: expected  = should respond on JOBD K-Line (verify on car)
+#         unlikely  = not expected on this ECU (verify anyway, cheap to try)
+#         extended  = Toyota-specific PID, needs Techstream/reference to identify
+# -----------------------------------------------------------------------------
+pid_wishlist:
+  - name: rpm
+    mode: "01"
+    pid: "0C"
+    unit: rpm
+    status: expected
+    why: Core dash gauge; also the sequential-turbo transition (~4000 rpm) marker.
+  - name: speed
+    mode: "01"
+    pid: "0D"
+    unit: km/h
+    status: expected
+    why: Core dash gauge; 0-100 timing later.
+  - name: coolant_temp
+    mode: "01"
+    pid: "05"
+    unit: degC
+    status: expected
+    why: Overheat alerting.
+  - name: throttle_pos
+    mode: "01"
+    pid: "11"
+    unit: "%"
+    status: expected
+    why: Driver-demand correlation for hesitation diagnosis.
+  - name: intake_air_temp
+    mode: "01"
+    pid: "0F"
+    unit: degC
+    status: expected
+    why: Heat-soak context for the twins.
+  - name: timing_advance
+    mode: "01"
+    pid: "0E"
+    unit: deg
+    status: expected
+    why: Knock-retard visibility under boost.
+  - name: o2_sensor_b1s1
+    mode: "01"
+    pid: "14"
+    unit: V
+    status: expected
+    why: Narrowband only on stock ECU — useful for lean/rich trend, NOT true AFR.
+  - name: engine_load
+    mode: "01"
+    pid: "04"
+    unit: "%"
+    status: expected
+    why: Load context for every other signal.
+  - name: maf
+    mode: "01"
+    pid: "10"
+    unit: g/s
+    status: unlikely
+    why: 2JZ-GTE is MAP-based (speed density); no MAF sensor fitted. Try it once, expect no response.
+  - name: map_boost
+    mode: "01/21"
+    pid: extended
+    unit: kPa
+    status: extended
+    why: >-
+      THE signal for this car — manifold pressure shows exactly what the
+      sequential twins are doing, including the ~4000 rpm transition. Stock ECU
+      reads a MAP sensor; the PID exposing it is Toyota-specific. Identify via
+      Techstream, then add here.
+  - name: trans_fluid_temp
+    mode: "21"
+    pid: extended
+    unit: degC
+    status: extended
+    why: A340E health; Toyota extended PID, identify via Techstream.
+  - name: battery_voltage
+    mode: "01"
+    pid: "42"
+    unit: V
+    status: expected
+    why: Charging-system watch; also cross-checks the logger's own supply.
+  - name: dtc_count
+    mode: "01"
+    pid: "01"
+    unit: count
+    status: expected
+    why: MIL status + code count without a full Mode 03 pull.
+  - name: vin
+    mode: "09"
+    pid: "02"
+    unit: text
+    status: verify
+    why: JDM ECUs often don't answer Mode 09. Nice-to-have only.
+
+# Poll budget on K-Line (~10.4 kbps, ~5-10 reads/sec realistic):
+poll_plan:
+  fast_loop_hz: 5
+  fast_loop_pids: [rpm, speed, throttle_pos, engine_load]
+  slow_loop_hz: 1
+  slow_loop_pids: [coolant_temp, intake_air_temp, timing_advance, o2_sensor_b1s1, battery_voltage, map_boost, trans_fluid_temp]
+  dtc_poll_interval_s: 300
+  note: >-
+    Keep the fast loop to 4 PIDs so the dash stays live. Everything else rides
+    the 1 Hz loop. Re-tune after measuring real latency in verification step 5.
+
+# -----------------------------------------------------------------------------
+# Aristo-specific notes
+# -----------------------------------------------------------------------------
+notes:
+  sequential_turbos: >-
+    Stock twins are sequential: turbo #1 handles low RPM, #2 comes online
+    around ~4000 rpm via exhaust-gas and intake control valves. Any hesitation
+    or flat spot AT ~4000 rpm is the sequential transition until proven
+    otherwise — log RPM + MAP + throttle together to see it.
+  jdm_quirks:
+    - "Speedometer/odometer in km/h — dash displays km/h natively, no conversion needed."
+    - "JDM ECU may not respond to Mode 09 (VIN) or some Mode 01 PIDs US ECUs answer."
+    - "OBDLink/phone apps default to CAN protocols — force ISO 9141-2 (ATSP3) or they will fail to connect and look like a dead port."
+    - "RHD: DLC3 on the RIGHT side of the steering column, not the left."
+  no_dbc: >-
+    No CAN bus found on this chassis per current evidence, so phase-2 DBC
+    decoding (opendbc) does not apply. Phase 2 for the Aristo = Toyota extended
+    PIDs + threshold alerts + trip stats over K-Line.
+  tach_fallback: >-
+    ECU TACH pin outputs a 0V-to-battery square wave proportional to RPM,
+    available at the engine-bay diagnostic connector (IG- terminal). If K-Line
+    polling is too slow for a lively tach, a frequency-counter input (cheap USB
+    DAQ or microcontroller) on this wire is the hardware fallback.
+  safety: >-
+    Read-only always in phases 1-3. The K-Line adapter only SENDS diagnostic
+    requests (Mode 01/03) — that is normal OBD polling, not bus transmission
+    in the CAN sense. No raw frame injection, ever, until phase 4 bench work.

@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="600" fill="#fafafa"/>
+  <text x="480" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#111">
+    Aristo V300 — Vehicle Computer Power &amp; Data Wiring
+  </text>
+  <text x="480" y="56" text-anchor="middle" font-size="12" fill="#666">
+    Read-only supervisory install. Stock ECU untouched. All wiring fused at the source.
+  </text>
+
+  <!-- ============ POWER CHAIN (top) ============ -->
+  <text x="20" y="96" font-size="13" font-weight="bold" fill="#111">POWER CHAIN</text>
+
+  <!-- Battery -->
+  <g>
+    <rect x="20" y="120" width="120" height="90" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="80" y="148" text-anchor="middle" font-size="14" font-weight="bold" fill="#111">Battery</text>
+    <text x="80" y="168" text-anchor="middle" font-size="12" fill="#333">12 V</text>
+    <text x="80" y="186" text-anchor="middle" font-size="11" fill="#666">(−) → chassis ground</text>
+  </g>
+
+  <!-- 30A fuse -->
+  <g>
+    <line x1="140" y1="165" x2="200" y2="165" stroke="#c0392b" stroke-width="3"/>
+    <rect x="200" y="140" width="90" height="50" rx="6" fill="#fff" stroke="#c0392b" stroke-width="2"/>
+    <text x="245" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#c0392b">30 A fuse</text>
+    <text x="245" y="178" text-anchor="middle" font-size="10" fill="#666">&lt;30 cm from terminal</text>
+  </g>
+
+  <!-- 10 AWG run -->
+  <g>
+    <line x1="290" y1="165" x2="360" y2="165" stroke="#c0392b" stroke-width="3"/>
+    <text x="325" y="155" text-anchor="middle" font-size="10" fill="#c0392b">10 AWG red</text>
+  </g>
+
+  <!-- Relay -->
+  <g>
+    <rect x="360" y="120" width="130" height="90" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="425" y="148" text-anchor="middle" font-size="13" font-weight="bold" fill="#111">40 A relay</text>
+    <text x="425" y="168" text-anchor="middle" font-size="11" fill="#333">ignition-switched</text>
+    <text x="425" y="186" text-anchor="middle" font-size="10" fill="#666">coil ← ACC circuit</text>
+  </g>
+
+  <g>
+    <line x1="490" y1="165" x2="550" y2="165" stroke="#c0392b" stroke-width="3"/>
+    <text x="520" y="155" text-anchor="middle" font-size="10" fill="#c0392b">10 AWG</text>
+  </g>
+
+  <!-- Inverter -->
+  <g>
+    <rect x="550" y="120" width="150" height="90" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="625" y="146" text-anchor="middle" font-size="13" font-weight="bold" fill="#111">300 W inverter</text>
+    <text x="625" y="166" text-anchor="middle" font-size="11" fill="#333">pure sine, 12 V → 110 V</text>
+    <text x="625" y="184" text-anchor="middle" font-size="10" fill="#666">chassis-grounded case</text>
+  </g>
+
+  <g>
+    <line x1="700" y1="165" x2="740" y2="165" stroke="#7f8c8d" stroke-width="3"/>
+    <text x="720" y="155" text-anchor="middle" font-size="10" fill="#7f8c8d">110 V AC</text>
+  </g>
+
+  <!-- UPS -->
+  <g>
+    <rect x="740" y="120" width="200" height="90" rx="8" fill="#fff" stroke="#2980b9" stroke-width="2"/>
+    <text x="840" y="144" text-anchor="middle" font-size="13" font-weight="bold" fill="#111">APC BE425M UPS</text>
+    <text x="840" y="162" text-anchor="middle" font-size="11" fill="#333">crank-dip ride-through</text>
+    <text x="840" y="180" text-anchor="middle" font-size="10" fill="#666">USB → Mini: auto-shutdown signal</text>
+    <text x="840" y="196" text-anchor="middle" font-size="10" fill="#666">425 VA / 255 W</text>
+  </g>
+
+  <!-- Ground return (bottom of power chain) -->
+  <g>
+    <line x1="80" y1="210" x2="80" y2="250" stroke="#333" stroke-width="3"/>
+    <line x1="40" y1="250" x2="120" y2="250" stroke="#333" stroke-width="3"/>
+    <line x1="55" y1="258" x2="105" y2="258" stroke="#333" stroke-width="3"/>
+    <line x1="70" y1="266" x2="90" y2="266" stroke="#333" stroke-width="3"/>
+    <text x="80" y="284" text-anchor="middle" font-size="10" fill="#333">chassis ground</text>
+  </g>
+  <text x="300" y="284" font-size="10" fill="#666">
+    Grounds: battery (−) → chassis • inverter case → chassis • 10 AWG black return alongside red run
+  </text>
+
+  <!-- ============ DATA PATH (middle) ============ -->
+  <text x="20" y="330" font-size="13" font-weight="bold" fill="#111">DATA PATH (read-only)</text>
+
+  <!-- DLC3 -->
+  <g>
+    <rect x="20" y="350" width="170" height="110" rx="8" fill="#fff" stroke="#27ae60" stroke-width="2"/>
+    <text x="105" y="376" text-anchor="middle" font-size="13" font-weight="bold" fill="#111">DLC3 (cabin)</text>
+    <text x="105" y="396" text-anchor="middle" font-size="11" fill="#333">driver footwell, RHD right side</text>
+    <text x="105" y="414" text-anchor="middle" font-size="10" fill="#666">pin 4: ground</text>
+    <text x="105" y="430" text-anchor="middle" font-size="10" fill="#666">pin 7: K-Line (SIL) ← ECU</text>
+    <text x="105" y="446" text-anchor="middle" font-size="10" fill="#666">pin 16: +12 V</text>
+  </g>
+
+  <g>
+    <line x1="190" y1="405" x2="260" y2="405" stroke="#27ae60" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="225" y="395" text-anchor="middle" font-size="10" fill="#27ae60">J1962</text>
+  </g>
+
+  <!-- ELM327 -->
+  <g>
+    <rect x="260" y="350" width="180" height="110" rx="8" fill="#fff" stroke="#27ae60" stroke-width="2"/>
+    <text x="350" y="376" text-anchor="middle" font-size="13" font-weight="bold" fill="#111">ELM327 USB</text>
+    <text x="350" y="396" text-anchor="middle" font-size="11" fill="#333">OBDLink EX (recommended)</text>
+    <text x="350" y="414" text-anchor="middle" font-size="10" fill="#666">ISO 9141-2 K-Line @ 10.4 kbps</text>
+    <text x="350" y="430" text-anchor="middle" font-size="10" fill="#666">ATSP3 • read-only polling</text>
+    <text x="350" y="446" text-anchor="middle" font-size="10" fill="#c0392b">CAN adapters do NOT work here</text>
+  </g>
+
+  <g>
+    <line x1="440" y1="405" x2="510" y2="405" stroke="#27ae60" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="475" y="395" text-anchor="middle" font-size="10" fill="#27ae60">USB serial</text>
+  </g>
+
+  <!-- Mac Mini -->
+  <g>
+    <rect x="510" y="350" width="200" height="110" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="610" y="376" text-anchor="middle" font-size="14" font-weight="bold" fill="#111">Mac Mini M6</text>
+    <text x="610" y="396" text-anchor="middle" font-size="11" fill="#333">python-OBD → SQLite</text>
+    <text x="610" y="414" text-anchor="middle" font-size="10" fill="#666">web dash :8080 • CarDash app</text>
+    <text x="610" y="430" text-anchor="middle" font-size="10" fill="#666">trunk mounted, ventilated</text>
+    <text x="610" y="446" text-anchor="middle" font-size="10" fill="#666">← 110 V AC from UPS (above)</text>
+  </g>
+
+  <!-- power link Mini<->UPS -->
+  <g>
+    <line x1="840" y1="210" x2="840" y2="350" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="6,4"/>
+    <text x="852" y="285" font-size="10" fill="#7f8c8d">AC + USB</text>
+  </g>
+
+  <!-- ============ NOTES (bottom) ============ -->
+  <text x="20" y="500" font-size="13" font-weight="bold" fill="#111">NOTES</text>
+  <text x="20" y="522" font-size="11" fill="#333">
+    1. Fuse within 30 cm of the battery positive terminal — unfused wire in an engine bay is a fire waiting to happen.
+  </text>
+  <text x="20" y="540" font-size="11" fill="#333">
+    2. Relay coil taps an ACC-switched circuit: key off = inverter dead = zero parked drain. UPS bridges crank dips and orders a clean macOS shutdown.
+  </text>
+  <text x="20" y="558" font-size="11" fill="#333">
+    3. K-Line adapter only SENDS diagnostic requests (Mode 01/03) — normal OBD polling. No frame injection, no ECU writes, ever (until phase-4 bench work).
+  </text>
+  <text x="20" y="576" font-size="11" fill="#333">
+    4. Route the J1962 cable under dash trim to the trunk; keep the 10 AWG power run away from sharp edges (loom it) and away from the exhaust.
+  </text>
+</svg>
