@@ -12,9 +12,12 @@ network (the car's Wi-Fi hotspot in the real setup).
 API (also consumed by the native CarDash SwiftUI app):
     GET /              the HTML dash
     GET /api/info      session id, configured DBC files, vehicle label
-    GET /api/latest    latest OBD-II values + latest decoded signals
+    GET /api/latest[?session_id=N]   latest OBD-II values + decoded signals
     GET /api/live      Server-Sent Events stream of /api/latest (~2 Hz)
-    GET /api/history?signal=<name>&limit=<n>  time series for one signal
+    GET /api/history?signal=<name>&limit=<n>[&session_id=N]
+    GET /api/sessions  all sessions, newest first, with sample counts
+    GET /api/trip?session_id=N      drive summary (distance, economy, events)
+    GET /api/track?session_id=N     decimated GPS track [[lat, lon], ...]
 """
 from __future__ import annotations
 
@@ -27,6 +30,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from .config import load_config
+from . import trips as trip_analytics
 
 HTML_PATH = Path(__file__).with_name("dash.html")
 
@@ -38,61 +42,74 @@ def _connect(cfg: dict) -> sqlite3.Connection:
     return conn
 
 
-def _latest(conn: sqlite3.Connection, cfg: dict) -> dict:
+def _latest(conn: sqlite3.Connection, cfg: dict,
+            session_id: int | None = None) -> dict:
+    # The subquery filter is enough: MAX(id) per name is already scoped
+    # to the session, so the outer lookup can only hit those rows.
+    w = "WHERE session_id=?" if session_id else ""
+    args = (session_id,) if session_id else ()
     obd2: dict[str, float | None] = {}
     units: dict[str, str] = {}
     for row in conn.execute(
             "SELECT name, value, unit FROM obd2 WHERE id IN "
-            "(SELECT MAX(id) FROM obd2 GROUP BY name)"):
+            f"(SELECT MAX(id) FROM obd2 {w} GROUP BY name)", args):
         obd2[row["name"]] = row["value"]
         units[row["name"]] = row["unit"] or ""
     signals: dict[str, dict] = {}
     for row in conn.execute(
             "SELECT signal, value, unit, message FROM signals WHERE id IN "
-            "(SELECT MAX(id) FROM signals GROUP BY signal)"):
+            f"(SELECT MAX(id) FROM signals {w} GROUP BY signal)", args):
         signals[row["signal"]] = {"value": row["value"],
                                   "unit": row["unit"] or "",
                                   "message": row["message"] or ""}
     ts_row = conn.execute(
         "SELECT MAX(ts) AS ts FROM "
-        "(SELECT ts FROM obd2 UNION ALL SELECT ts FROM signals)").fetchone()
+        f"(SELECT ts FROM obd2 {w} UNION ALL SELECT ts FROM signals {w})",
+        args + args).fetchone()
     return {"ts": ts_row["ts"] or time.time(),
             "obd2": obd2, "obd2_units": units, "signals": signals,
-            "vision": _vision_summary(conn, cfg)}
+            "vision": _vision_summary(conn, cfg, session_id)}
 
 
-def _history(conn: sqlite3.Connection, name: str,
-             limit: int) -> dict:
+def _history(conn: sqlite3.Connection, name: str, limit: int,
+             session_id: int | None = None) -> dict:
     limit = max(1, min(limit, 5000))
+    filt = "AND session_id=?" if session_id else ""
+    args: tuple = (name,) + ((session_id,) if session_id else ())
     rows = conn.execute(
-        "SELECT ts, value FROM signals WHERE signal=? "
-        "ORDER BY ts DESC LIMIT ?", (name, limit)).fetchall()
+        "SELECT ts, value FROM signals WHERE signal=? " + filt +
+        "ORDER BY ts DESC LIMIT ?", args + (limit,)).fetchall()
     table = "signals"
     if not rows:
         rows = conn.execute(
-            "SELECT ts, value FROM obd2 WHERE name=? "
-            "ORDER BY ts DESC LIMIT ?", (name, limit)).fetchall()
+            "SELECT ts, value FROM obd2 WHERE name=? " + filt +
+            "ORDER BY ts DESC LIMIT ?", args + (limit,)).fetchall()
         table = "obd2"
     samples = [[r["ts"], r["value"]] for r in reversed(rows)
                if r["value"] is not None]
     return {"signal": name, "table": table, "samples": samples}
 
 
-def _vision_summary(conn: sqlite3.Connection, cfg: dict) -> dict:
+def _vision_summary(conn: sqlite3.Connection, cfg: dict,
+                    session_id: int | None = None) -> dict:
     """Latest detection per label + recent event count + newest snapshot."""
+    w = "WHERE session_id=?" if session_id else ""
+    args = (session_id,) if session_id else ()
+    w_and = w.replace("WHERE", "AND") if w else ""
     per_label: dict[str, dict] = {}
     for row in conn.execute(
             "SELECT label, confidence, ts FROM vision_events WHERE id IN "
-            "(SELECT MAX(id) FROM vision_events GROUP BY label)"):
+            f"(SELECT MAX(id) FROM vision_events {w} GROUP BY label)", args):
         per_label[row["label"]] = {"confidence": row["confidence"],
                                    "ts": row["ts"]}
     minute_ago = time.time() - 60
     n_recent = conn.execute(
-        "SELECT COUNT(*) AS n FROM vision_events WHERE ts > ?",
-        (minute_ago,)).fetchone()["n"]
+        "SELECT COUNT(*) AS n FROM vision_events "
+        f"WHERE ts > ? {w_and}", (minute_ago,) + args).fetchone()["n"]
     snap_row = conn.execute(
         "SELECT snapshot_path FROM vision_events "
-        "WHERE snapshot_path != '' ORDER BY ts DESC LIMIT 1").fetchone()
+        f"WHERE snapshot_path != '' {w_and} ORDER BY ts DESC LIMIT 1",
+        args).fetchone()
     last_snapshot = None
     if snap_row and snap_row["snapshot_path"]:
         last_snapshot = Path(snap_row["snapshot_path"]).name
@@ -135,6 +152,17 @@ def _info(conn: sqlite3.Connection, cfg: dict) -> dict:
     }
 
 
+def qs_int(qs: dict, key: str) -> int | None:
+    """Optional integer query param, e.g. ?session_id=3."""
+    vals = qs.get(key)
+    if not vals or not vals[0]:
+        return None
+    try:
+        return int(vals[0])
+    except ValueError:
+        return None
+
+
 class _Handler(BaseHTTPRequestHandler):
     cfg: dict = {}
 
@@ -163,8 +191,10 @@ class _Handler(BaseHTTPRequestHandler):
                 with _connect(self.cfg) as conn:
                     self._send_json(_info(conn, self.cfg))
             elif parsed.path == "/api/latest":
+                qs = parse_qs(parsed.query)
                 with _connect(self.cfg) as conn:
-                    self._send_json(_latest(conn, self.cfg))
+                    sid = qs_int(qs, "session_id")
+                    self._send_json(_latest(conn, self.cfg, sid))
             elif parsed.path == "/api/history":
                 qs = parse_qs(parsed.query)
                 name = qs.get("signal", [""])[0]
@@ -173,7 +203,33 @@ class _Handler(BaseHTTPRequestHandler):
                     self._send_json({"error": "missing ?signal="}, 400)
                     return
                 with _connect(self.cfg) as conn:
-                    self._send_json(_history(conn, name, limit))
+                    self._send_json(_history(conn, name, limit,
+                                             qs_int(qs, "session_id")))
+            elif parsed.path == "/api/sessions":
+                with _connect(self.cfg) as conn:
+                    self._send_json(
+                        {"sessions": trip_analytics.list_sessions(conn)})
+            elif parsed.path == "/api/trip":
+                qs = parse_qs(parsed.query)
+                sid = qs_int(qs, "session_id")
+                if sid is None:
+                    with _connect(self.cfg) as conn:
+                        row = conn.execute(
+                            "SELECT MAX(id) AS id FROM sessions").fetchone()
+                        sid = row["id"] if row else None
+                if sid is None:
+                    self._send_json({"error": "no sessions yet"}, 404)
+                    return
+                with _connect(self.cfg) as conn:
+                    self._send_json(trip_analytics.summarize(conn, sid))
+            elif parsed.path == "/api/track":
+                qs = parse_qs(parsed.query)
+                sid = qs_int(qs, "session_id")
+                if sid is None:
+                    self._send_json({"error": "missing ?session_id="}, 400)
+                    return
+                with _connect(self.cfg) as conn:
+                    self._send_json(trip_analytics.track(conn, sid))
             elif parsed.path == "/api/live":
                 self._serve_sse()
             elif parsed.path.startswith("/snapshots/"):

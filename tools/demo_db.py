@@ -26,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from carlogger.config import load_config  # noqa: E402
 from carlogger.db import Store  # noqa: E402
+from carlogger.obd2 import describe_dtc  # noqa: E402
 
 
 def drive_profile(t: float, total: float) -> dict:
@@ -49,12 +50,14 @@ def drive_profile(t: float, total: float) -> dict:
         rpm = 2400.0
         throttle = 20.0
         brake = 0.0
-    elif t < 100:
-        k = (t - 80) / 20  # 0..1
+    elif t < 88:
+        # hard stop: 95 -> 0 km/h in 8 s (~-12 km/h/s) to exercise the
+        # harsh-braking detector
+        k = (t - 80) / 8  # 0..1
         speed = 95.0 * (1 - k)
         rpm = 2400 - 1500 * k
         throttle = 0.0
-        brake = 80.0
+        brake = 85.0
     else:
         speed = 0.0
         rpm = 850.0
@@ -107,22 +110,24 @@ def main() -> int:
                     help="random seed (same seed = same drive)")
     args = ap.parse_args()
 
-    random.seed(args.seed)
-    if args.db:
-        db_path = Path(args.db).expanduser()
-    else:
-        cfg, _ = load_config(args.config)
-        db_path = Path(cfg["storage"]["path"]).expanduser()
-
+def seed_db(db_path: Path, seconds: float = 120, hz: float = 2.0,
+            seed: int = 7) -> int:
+    """Seed one fake drive; returns the session id. Importable so tests
+    can build deterministic fixtures (same seed = same drive)."""
+    random.seed(seed)
     store = Store(db_path, note="mode=demo")
-    t0 = time.time() - args.seconds
-    dt = 1.0 / args.hz
-    steps = int(args.seconds / dt)
+    t0 = time.time() - seconds
+    dt = 1.0 / hz
+    steps = int(seconds / dt)
     n_vis = 0
+    # Fake GPS: start near Stratford ON, heading north, gentle curve
+    # while cruising so the track looks like a real road.
+    lat, lon, heading = 43.3680, -80.9820, 0.0
+    n_gps = 0
     for i in range(steps):
         t = i * dt
         ts = t0 + t
-        s = drive_profile(t, args.seconds)
+        s = drive_profile(t, seconds)
 
         for pid, name, val, unit in (
                 (12, "rpm", s["rpm"], "rpm"),
@@ -142,16 +147,59 @@ def main() -> int:
             ("BRAKE", "BrakePedal", round(s["brake"], 1), "%"),
         ])
 
+        # GPS fix at 1 Hz while moving (receivers drop out at standstill
+        # in parking garages; this keeps the demo honest-ish).
+        if i % int(hz) == 0 and s["speed"] > 3:
+            if 45 <= t < 80:
+                heading += 0.35  # gentle right curve on the cruise leg
+            dist_m = s["speed"] / 3.6 * 1.0
+            lat += dist_m * math.cos(math.radians(heading)) / 111320.0
+            lon += (dist_m * math.sin(math.radians(heading))
+                    / (111320.0 * math.cos(math.radians(lat))))
+            store.log_gps(ts, round(lat, 6), round(lon, 6),
+                          alt=round(345 + 4 * math.sin(t * 0.05), 1),
+                          speed_kmh=round(s["speed"], 1), sats=8)
+            n_gps += 1
+
         # vision tick at 1 Hz
-        if i % int(args.hz) == 0:
+        if i % int(hz) == 0:
             rows = fake_detections(t)
             store.log_vision(ts, rows)
             n_vis += len(rows)
 
+    # a stored misfire code mid-drive and a pending catalyst code later
+    t_mid = t0 + seconds * 0.4
+    store.log_dtcs(t_mid, [("P0300", describe_dtc("P0300"), "stored")])
+    store.log_dtcs(t0 + seconds * 0.7,
+                   [("P0420", describe_dtc("P0420"), "pending")])
     store.close()
     print(f"seeded session {store.session_id} -> {db_path}")
     print(f"  {steps * 6} OBD-II samples, {steps * 6} signal samples, "
-          f"{n_vis} vision events")
+          f"{n_vis} vision events, {n_gps} GPS fixes, 2 DTCs")
+    return store.session_id
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--config", default="config.toml",
+                    help="config file (used for the [storage] db path)")
+    ap.add_argument("--db", default="",
+                    help="override the database path")
+    ap.add_argument("--seconds", type=float, default=120,
+                    help="length of the fake drive in seconds")
+    ap.add_argument("--hz", type=float, default=2.0,
+                    help="sample rate for OBD-II/signals")
+    ap.add_argument("--seed", type=int, default=7,
+                    help="random seed (same seed = same drive)")
+    args = ap.parse_args()
+
+    if args.db:
+        db_path = Path(args.db).expanduser()
+    else:
+        cfg, _ = load_config(args.config)
+        db_path = Path(cfg["storage"]["path"]).expanduser()
+
+    seed_db(db_path, args.seconds, args.hz, args.seed)
     print("serve it with:  python3 -m carlogger.dash")
     return 0
 

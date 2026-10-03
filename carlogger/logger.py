@@ -20,7 +20,7 @@ import can
 from .config import load_config
 from .db import Store
 from .decode import SignalDB
-from .obd2 import PIDS, query
+from .obd2 import PIDS, describe_dtc, query, read_dtcs
 
 _stop = False
 
@@ -73,6 +73,13 @@ def run(cfg: dict, duration: float | None = None) -> Path:
           f"(session {store.session_id})", flush=True)
     t_end = time.time() + duration if duration else None
     next_poll = 0.0
+    # Periodic DTC check (read-only; clearing is a manual CLI action).
+    # 0 disables it. First poll happens after one interval, not at
+    # startup, so short runs (and ECU init) aren't starved by the
+    # multi-second DTC timeouts.
+    dtc_interval = float(cfg["obd2"].get("dtc_poll_interval", 300))
+    next_dtc = time.time() + dtc_interval if dtc_interval > 0 else 0.0
+    seen_dtcs: set[tuple[str, str]] = set()
     frames = 0
     samples = 0
     sig_samples = 0
@@ -104,6 +111,22 @@ def run(cfg: dict, duration: float | None = None) -> Path:
                     name = PIDS[pid][0]
                     store.log_obd2(time.time(), pid, name, value, unit)
                     samples += 1
+            if (do_obd2 and dtc_interval > 0
+                    and time.time() >= next_dtc and not _stop):
+                next_dtc = time.time() + dtc_interval
+                for pending in (False, True):
+                    codes = read_dtcs(bus, pending=pending,
+                                      timeout=resp_timeout + 1.0)
+                    if not codes:
+                        continue
+                    status = "pending" if pending else "stored"
+                    fresh = [(c, describe_dtc(c), status) for c in codes
+                             if (c, status) not in seen_dtcs]
+                    if fresh:
+                        store.log_dtcs(time.time(), fresh)
+                        seen_dtcs.update((c, s) for c, _, s in fresh)
+                        print(f"DTCs ({status}): {', '.join(c for c, _, _ in fresh)}",
+                              flush=True)
             if not do_listen and do_obd2:
                 time.sleep(0.01)  # don't spin when there's nothing to recv
     finally:

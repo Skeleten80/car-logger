@@ -28,12 +28,20 @@
   th { color: #8b93a7; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
   .empty { color: #8b93a7; font-size: 13px; padding: 12px 4px; }
   h2 { font-size: 14px; margin: 18px 0 8px; color: #c6cddd; }
+  #session-select { background: #131826; color: #e6ebf4; border: 1px solid #232c42; border-radius: 8px; padding: 6px 10px; font-size: 13px; max-width: 260px; }
+  #track-svg { width: 100%; height: 220px; display: block; }
+  .dtc-code { font-family: monospace; font-weight: 700; color: #fbbf24; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .stat .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8b93a7; margin-top: 2px; }
 </style>
 </head>
 <body>
 <header>
   <h1>CarDash</h1>
   <span id="vehicle-label"></span>
+  <select id="session-select" title="Drive to inspect"></select>
+  <span id="past-note" class="empty" style="padding:0" hidden>viewing a past drive — live gauges still follow the newest session</span>
   <span id="conn-pill">OFFLINE</span>
 </header>
 
@@ -91,6 +99,27 @@
     <thead><tr><th>Signal</th><th>Value</th><th>Unit</th><th>Message</th></tr></thead>
     <tbody id="signals-tbody"></tbody>
   </table>
+</div>
+
+<h2>Trip summary</h2>
+<div class="card">
+  <div class="stat-grid" id="trip-stats"></div>
+  <div id="trip-empty" class="empty">No drive data yet.</div>
+</div>
+
+<h2>Diagnostic trouble codes</h2>
+<div class="card">
+  <div id="dtc-empty" class="empty">No DTCs recorded for this drive. The logger polls stored + pending codes every few minutes while running.</div>
+  <table id="dtc-table" hidden>
+    <thead><tr><th>Code</th><th>Description</th><th>Status</th></tr></thead>
+    <tbody id="dtc-tbody"></tbody>
+  </table>
+</div>
+
+<h2>Route</h2>
+<div class="card">
+  <svg id="track-svg" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet"></svg>
+  <div id="track-empty" class="empty">No GPS fixes for this drive — connect a USB GPS dongle and run <span style="font-family:monospace">python -m carlogger.gps</span>.</div>
 </div>
 
 <script>
@@ -181,6 +210,120 @@ function drawHistory(samples) {
   ctx.fillText(`${lo.toFixed(0)} rpm`, 6, h - 6);
 }
 
+function fmtDur(s) {
+  if (s === null || s === undefined) return "–";
+  s = Math.round(s);
+  const m = Math.floor(s / 60);
+  return m ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
+// ---- Trip browser: session picker, summary, DTCs, route map ----
+let latestSessionId = null;
+
+function loadSessions() {
+  fetch("/api/sessions").then(r => r.json()).then(d => {
+    const sel = $("session-select");
+    const sessions = d.sessions || [];
+    sel.hidden = sessions.length === 0;
+    if (!sessions.length) return;
+    latestSessionId = sessions[0].id;
+    sel.innerHTML = "";
+    for (const s of sessions) {
+      const o = document.createElement("option");
+      const dt = new Date(s.started_at * 1000);
+      o.value = s.id;
+      o.textContent = `#${s.id} — ${dt.toLocaleString()}${s.note ? " (" + s.note + ")" : ""}`;
+      sel.appendChild(o);
+    }
+    sel.value = String(latestSessionId);
+    sel.onchange = () => loadTrip(parseInt(sel.value, 10));
+    loadTrip(latestSessionId);
+  });
+}
+
+function statCell(v, k) {
+  return `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+}
+
+function loadTrip(sid) {
+  $("past-note").hidden = (sid === latestSessionId);
+  fetch(`/api/trip?session_id=${sid}`).then(r => r.json()).then(t => {
+    const el = $("trip-stats");
+    if (t.error) {
+      el.innerHTML = "";
+      $("trip-empty").hidden = false;
+      $("trip-empty").textContent = t.error;
+      return;
+    }
+    $("trip-empty").hidden = true;
+    el.innerHTML = [
+      [t.distance_km != null ? t.distance_km.toFixed(1) + " km" : "–", "Distance"],
+      [fmtDur(t.duration_s), "Duration"],
+      [t.avg_speed_kmh != null ? t.avg_speed_kmh.toFixed(0) + " km/h" : "–", "Avg speed"],
+      [t.max_speed_kmh != null ? t.max_speed_kmh.toFixed(0) + " km/h" : "–", "Top speed"],
+      [t.idle_pct != null ? t.idle_pct.toFixed(0) + "%" : "–", "Idle"],
+      [t.l_per_100km != null ? t.l_per_100km.toFixed(1) : "–", "L/100km"],
+      [t.harsh_accel_events != null ? t.harsh_accel_events : "–", "Harsh accel"],
+      [t.harsh_brake_events != null ? t.harsh_brake_events : "–", "Harsh braking"],
+      [t.vision_interesting != null ? t.vision_interesting : "–", "Interesting frames"],
+    ].map(([v, k]) => statCell(v, k)).join("");
+
+    const dtcs = t.dtcs || [];
+    $("dtc-empty").hidden = dtcs.length > 0;
+    $("dtc-table").hidden = dtcs.length === 0;
+    const tb = $("dtc-tbody");
+    tb.innerHTML = "";
+    for (const c of dtcs) {
+      const tr = document.createElement("tr");
+      const tdCode = document.createElement("td");
+      tdCode.className = "dtc-code";
+      tdCode.textContent = c.code;
+      const tdDesc = document.createElement("td");
+      tdDesc.textContent = c.description || "—";
+      const tdStatus = document.createElement("td");
+      tdStatus.textContent = c.status;
+      tr.append(tdCode, tdDesc, tdStatus);
+      tb.appendChild(tr);
+    }
+  });
+  fetch(`/api/track?session_id=${sid}`).then(r => r.json()).then(drawTrack);
+}
+
+function drawTrack(d) {
+  const svg = $("track-svg");
+  const pts = d.points || [];
+  svg.innerHTML = "";
+  $("track-empty").hidden = pts.length >= 2;
+  if (pts.length < 2) return;
+  const lats = pts.map(p => p[0]), lons = pts.map(p => p[1]);
+  let la0 = Math.min(...lats), la1 = Math.max(...lats);
+  let lo0 = Math.min(...lons), lo1 = Math.max(...lons);
+  if (la1 - la0 < 1e-6) { la0 -= 5e-4; la1 += 5e-4; }
+  if (lo1 - lo0 < 1e-6) { lo0 -= 5e-4; lo1 += 5e-4; }
+  const W = 600, H = 300, P = 24;
+  const X = lon => P + (lon - lo0) / (lo1 - lo0) * (W - 2 * P);
+  const Y = lat => H - P - (lat - la0) / (la1 - la0) * (H - 2 * P);
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${X(p[1]).toFixed(1)},${Y(p[0]).toFixed(1)}`).join(" ");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = document.createElementNS(NS, "path");
+  el.setAttribute("d", path);
+  el.setAttribute("fill", "none");
+  el.setAttribute("stroke", "#38bdf8");
+  el.setAttribute("stroke-width", "3");
+  el.setAttribute("stroke-linejoin", "round");
+  svg.appendChild(el);
+  const dot = (p, color) => {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", X(p[1]).toFixed(1));
+    c.setAttribute("cy", Y(p[0]).toFixed(1));
+    c.setAttribute("r", "6");
+    c.setAttribute("fill", color);
+    svg.appendChild(c);
+  };
+  dot(pts[0], "#4ade80");
+  dot(pts[pts.length - 1], "#f87171");
+}
+
 const es = new EventSource("/api/live");
 es.onopen = () => setLive(true);
 es.onerror = () => setLive(false);
@@ -195,6 +338,7 @@ es.onmessage = e => {
 fetch("/api/info").then(r => r.json()).then(info => {
   $("vehicle-label").textContent = info.vehicle || (info.dbc_files.length ? info.dbc_files.length + " DBC file(s)" : "OBD-II only");
 });
+loadSessions();
 setInterval(() => {
   fetch("/api/history?signal=rpm&limit=240").then(r => r.json()).then(h => drawHistory(h.samples));
 }, 3000);

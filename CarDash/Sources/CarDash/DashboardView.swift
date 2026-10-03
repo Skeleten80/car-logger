@@ -15,6 +15,7 @@ struct DashboardView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     gaugeRow
+                    tripSection
                     HStack(alignment: .top, spacing: 12) {
                         rpmChart
                             .frame(minWidth: 320)
@@ -55,6 +56,16 @@ struct DashboardView: View {
                     .lineLimit(1)
             }
             Spacer()
+            if !vm.sessions.isEmpty {
+                Picker("Drive", selection: $vm.selectedSessionID) {
+                    ForEach(vm.sessions) { s in
+                        Text("#\(s.id) · \(Self.sessionDate(s.startedAt))")
+                            .tag(s.id as Int?)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 190)
+            }
             TextField("http://127.0.0.1:8080", text: $vm.baseURLString)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 220)
@@ -123,6 +134,75 @@ struct DashboardView: View {
             DashCard(title: "MAF", unit: "g/s") {
                 BigNumber(value: vm.obd2.maf, format: "%.1f")
                     .frame(maxHeight: .infinity, alignment: .center)
+            }
+        }
+    }
+
+    // MARK: - Trip summary
+
+    private static let sessionDateFmt: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .short
+        f.timeStyle = .short
+        return f
+    }()
+
+    private static func sessionDate(_ ts: Double) -> String {
+        sessionDateFmt.string(from: Date(timeIntervalSince1970: ts))
+    }
+
+    private var tripSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            DashSection(title: "TRIP SUMMARY")
+            if let t = vm.trip {
+                HStack(spacing: 10) {
+                    DashCard(title: "DISTANCE", unit: "km") {
+                        BigNumber(value: t.distanceKm, format: "%.1f",
+                                  font: .system(.title2, design: .monospaced))
+                    }
+                    DashCard(title: "ECONOMY", unit: "L/100km") {
+                        BigNumber(value: t.lPer100km, format: "%.1f",
+                                  font: .system(.title2, design: .monospaced))
+                    }
+                    DashCard(title: "TOP SPEED", unit: "km/h") {
+                        BigNumber(value: t.maxSpeedKmh, format: "%.0f",
+                                  font: .system(.title2, design: .monospaced))
+                    }
+                    DashCard(title: "IDLE", unit: "% of drive") {
+                        BigNumber(value: t.idlePct, format: "%.0f",
+                                  font: .system(.title2, design: .monospaced))
+                    }
+                    DashCard(title: "HARSH EVENTS", unit: "accel / brake") {
+                        Text("\(t.harshAccelEvents ?? 0) / \(t.harshBrakeEvents ?? 0)")
+                            .font(.system(.title2, design: .monospaced))
+                    }
+                }
+                if let dtcs = t.dtcs, !dtcs.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(dtcs) { d in
+                            HStack(spacing: 8) {
+                                Text(d.code)
+                                    .font(.system(.body, design: .monospaced))
+                                    .bold()
+                                    .foregroundStyle(.yellow)
+                                Text(d.codeDescription.isEmpty ? "—" : d.codeDescription)
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text(d.status.uppercased())
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                    }
+                    .padding(10)
+                    .background(.quaternary.opacity(0.45),
+                                in: RoundedRectangle(cornerRadius: 8))
+                }
+            } else {
+                Text("No trip data — pick a drive above.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
             }
         }
     }

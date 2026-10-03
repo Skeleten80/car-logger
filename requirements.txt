@@ -10,3 +10,5 @@ cantools>=40
 # these two; model export needs requirements-export.txt.
 onnxruntime>=1.17
 opencv-python-headless>=4.8
+# GPS dongle reader (carlogger/gps.py): NMEA-0183 over serial
+pyserial>=3.5

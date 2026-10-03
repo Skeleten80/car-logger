@@ -36,6 +36,14 @@ final class CarDashViewModel: ObservableObject {
     @Published private(set) var signals: [String: SignalReading] = [:]
     @Published private(set) var rpmHistory: [PlotPoint] = []
     @Published private(set) var lastError: String?
+    @Published private(set) var sessions: [SessionSummary] = []
+    @Published private(set) var trip: TripSummary?
+    @Published var selectedSessionID: Int? {
+        didSet {
+            guard oldValue != selectedSessionID else { return }
+            Task { [weak self] in await self?.fetchTrip() }
+        }
+    }
 
     // MARK: - Config
 
@@ -75,6 +83,8 @@ final class CarDashViewModel: ObservableObject {
         Task { [weak self] in
             await self?.fetchInfo()
             await self?.backfillRPMHistory()
+            await self?.fetchSessions()
+            await self?.fetchTrip()
         }
     }
 
@@ -125,6 +135,38 @@ final class CarDashViewModel: ObservableObject {
             rpmHistory = pts
         } catch {
             // Backfill is best-effort; live SSE points still accumulate.
+        }
+    }
+
+    // MARK: - Trip browser
+
+    private func fetchSessions() async {
+        do {
+            let data = try await api("api/sessions")
+            let resp = try JSONDecoder().decode(SessionsResponse.self,
+                                                from: data)
+            sessions = resp.sessions
+            if selectedSessionID == nil {
+                selectedSessionID = resp.sessions.first?.id
+            }
+        } catch {
+            // Best-effort: the live dash works without the trip browser.
+        }
+    }
+
+    private func fetchTrip() async {
+        guard let sid = selectedSessionID else {
+            trip = nil
+            return
+        }
+        do {
+            let data = try await api(
+                "api/trip",
+                query: [URLQueryItem(name: "session_id",
+                                     value: String(sid))])
+            trip = try JSONDecoder().decode(TripSummary.self, from: data)
+        } catch {
+            trip = nil
         }
     }
 

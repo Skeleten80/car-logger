@@ -144,6 +144,35 @@ Driver monitoring — in-cabin camera plus face/eye tracking via Apple's
 Vision framework — is the second half of phase 3. Like CarDash, that's
 Swift/Xcode work for the iMac.
 
+## Diagnostics, trips, GPS, CSV export
+
+Six additions that turn the logger from a capture tool into something you
+can actually learn from after a drive:
+
+- **DTCs (trouble codes).** The logger polls stored + pending codes
+  (modes 0x03/0x07, with ISO-TP multi-frame reassembly) every
+  `[obd2].dtc_poll_interval` seconds and logs them to `dtc_events` with
+  plain-English descriptions. The dash shows them per drive. Clearing is
+  deliberately manual-only: `python -m carlogger.obd2 --clear --confirm`.
+- **Trip summaries.** `carlogger/trips.py` computes per-drive stats from
+  data already logged: distance, duration, avg/top speed, idle %,
+  harsh accel/braking events, fuel used and L/100km (from MAF), DTC
+  count, interesting vision frames, GPS fix count. Served at
+  `/api/trip?session_id=N`.
+- **Trip history browser.** `/api/sessions` lists every drive; the web
+  dash and CarDash both have a drive picker, and `/api/latest` +
+  `/api/history` accept `?session_id=` to inspect past drives.
+- **CSV export.** `python3 tools/export_csv.py --session 3 --out drive3.csv`
+  dumps a drive's OBD-II, signals and GPS to long-format CSV for
+  Excel/pandas.
+- **Fuel economy.** Part of every trip summary (L/100km from MAF ÷
+  stoichiometric ratio) — no fuel-flow PID needed.
+- **GPS track logging.** `python -m carlogger.gps` reads NMEA-0183 from a
+  USB GPS dongle (e.g. GlobalSat BU-353, ~$30 CAD) into `gps_fixes`;
+  the dash draws the route as an SVG track map (no tiles, works
+  offline in the car). The NMEA parser is unit-tested; the serial path
+  needs the dongle and hasn't run against real hardware yet.
+
 ## On the M6 Mini (with a USB-CAN adapter)
 
 1. **Adapter driver** (macOS has no SocketCAN; each vendor needs its backend):
@@ -199,4 +228,6 @@ ORDER BY ts DESC LIMIT 20;                            -- decoded DBC signals
 - Phase 3: dashcam perception (YOLOv8n via onnxruntime; Neural Engine on the
   Mini through the CoreML execution provider) + live vision in the dash. ✅
   Driver monitoring (in-cabin, Vision framework) queued as phase 3b.
+- Diagnostics & trips: DTC read/logging, trip summaries + fuel economy,
+  trip history browser (web + CarDash), CSV export, GPS track logging. ✅
 - Phase 4: supervised CAN transmit experiments (bench first, road much later).

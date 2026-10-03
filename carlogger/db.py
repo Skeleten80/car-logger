@@ -65,6 +65,26 @@ CREATE TABLE IF NOT EXISTS vision_events (
 );
 CREATE INDEX IF NOT EXISTS idx_vis_ts ON vision_events(ts);
 CREATE INDEX IF NOT EXISTS idx_vis_label ON vision_events(label);
+CREATE TABLE IF NOT EXISTS dtc_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES sessions(id),
+    ts REAL NOT NULL,
+    code TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'stored'
+);
+CREATE INDEX IF NOT EXISTS idx_dtc_code ON dtc_events(code);
+CREATE TABLE IF NOT EXISTS gps_fixes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES sessions(id),
+    ts REAL NOT NULL,
+    lat REAL NOT NULL,
+    lon REAL NOT NULL,
+    alt REAL,
+    speed_kmh REAL,
+    sats INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_gps_ts ON gps_fixes(ts);
 """
 
 
@@ -86,6 +106,8 @@ class Store:
         self._obd_buf: list[tuple] = []
         self._sig_buf: list[tuple] = []
         self._vis_buf: list[tuple] = []
+        self._dtc_buf: list[tuple] = []
+        self._gps_buf: list[tuple] = []
 
     def log_frame(self, ts: float, arb_id: int, is_extended: bool,
                   dlc: int, data: bytes) -> None:
@@ -135,6 +157,18 @@ class Store:
                 " snapshot_path, interesting) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?)", self._vis_buf)
             self._vis_buf.clear()
+        if self._dtc_buf:
+            self.conn.executemany(
+                "INSERT INTO dtc_events "
+                "(session_id, ts, code, description, status) "
+                "VALUES (?,?,?,?,?)", self._dtc_buf)
+            self._dtc_buf.clear()
+        if self._gps_buf:
+            self.conn.executemany(
+                "INSERT INTO gps_fixes "
+                "(session_id, ts, lat, lon, alt, speed_kmh, sats) "
+                "VALUES (?,?,?,?,?,?,?)", self._gps_buf)
+            self._gps_buf.clear()
         self.conn.commit()
 
     def log_vision(self, ts: float,
@@ -152,3 +186,22 @@ class Store:
     def close(self) -> None:
         self.flush()
         self.conn.close()
+
+    def log_dtcs(self, ts: float,
+                 rows: list[tuple[str, str, str]]) -> None:
+        """Buffer DTC sightings; each row is (code, description, status)
+        where status is 'stored' or 'pending'."""
+        self._dtc_buf.extend(
+            (self.session_id, ts, code, desc, status)
+            for code, desc, status in rows)
+        if len(self._dtc_buf) >= 20:
+            self.flush()
+
+    def log_gps(self, ts: float, lat: float, lon: float,
+                alt: float | None = None,
+                speed_kmh: float | None = None,
+                sats: int | None = None) -> None:
+        self._gps_buf.append(
+            (self.session_id, ts, lat, lon, alt, speed_kmh, sats))
+        if len(self._gps_buf) >= 60:
+            self.flush()

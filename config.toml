@@ -28,6 +28,21 @@ mode = "both"
 pids = [5, 12, 13, 17, 47]
 poll_interval = 1.0
 response_timeout = 1.0
+# How often to re-read stored + pending DTCs (modes 0x03/0x07), in seconds.
+# 0 disables it. Read-only -- clearing codes is a manual CLI action:
+#   python -m carlogger.obd2 --clear --confirm
+dtc_poll_interval = 300
+
+[gps]
+# USB GPS dongle (NMEA-0183 over serial). Separate process:
+#   python -m carlogger.gps
+# Needs a receiver that presents as a serial port, e.g. GlobalSat BU-353
+# (/dev/ttyUSB0 on Linux, /dev/cu.usbserial-* on macOS). Requires pyserial.
+enabled = false
+port = "/dev/ttyUSB0"
+baud = 9600
+# Log at most one fix this often (seconds); RMC+GGA sentences are merged.
+min_interval = 1.0
 
 [storage]
 path = "~/car-logger-data/drive.db"

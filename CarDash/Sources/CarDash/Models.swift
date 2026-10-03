@@ -79,3 +79,71 @@ struct HistoryResponse: Decodable {
     var signal: String
     var samples: [[Double]]
 }
+
+// MARK: - Trip browser (/api/sessions, /api/trip)
+
+/// One entry from GET /api/sessions (newest first). The per-table sample
+/// counts ride along in the JSON but the app only needs identity here.
+struct SessionSummary: Decodable, Identifiable {
+    var id: Int
+    var startedAt: Double
+    var note: String
+
+    private enum CodingKeys: String, CodingKey {
+        case id, note
+        case startedAt = "started_at"
+    }
+}
+
+struct SessionsResponse: Decodable {
+    var sessions: [SessionSummary]
+}
+
+/// One trouble code from the "dtcs" array of GET /api/trip.
+struct TripDTC: Decodable, Identifiable {
+    var id: String { code }
+    var code: String
+    var codeDescription: String
+    var status: String
+
+    private enum CodingKeys: String, CodingKey {
+        case code, status
+        case codeDescription = "description"
+    }
+}
+
+/// Drive summary from GET /api/trip. Every metric is optional: a session
+/// with no speed data simply has nil distance, and the UI renders "—".
+/// The compiler synthesizes decodeIfPresent for these optionals, so both
+/// missing keys and explicit nulls decode to nil.
+struct TripSummary: Decodable {
+    var sessionID: Int?
+    var distanceKm: Double?
+    var durationS: Double?
+    var avgSpeedKmh: Double?
+    var maxSpeedKmh: Double?
+    var idlePct: Double?
+    var fuelL: Double?
+    var lPer100km: Double?
+    var harshAccelEvents: Int?
+    var harshBrakeEvents: Int?
+    var visionInteresting: Int?
+    var dtcCount: Int?
+    var dtcs: [TripDTC]?
+
+    private enum CodingKeys: String, CodingKey {
+        case sessionID = "session_id"
+        case distanceKm = "distance_km"
+        case durationS = "duration_s"
+        case avgSpeedKmh = "avg_speed_kmh"
+        case maxSpeedKmh = "max_speed_kmh"
+        case idlePct = "idle_pct"
+        case fuelL = "fuel_l"
+        case lPer100km = "l_per_100km"
+        case harshAccelEvents = "harsh_accel_events"
+        case harshBrakeEvents = "harsh_brake_events"
+        case visionInteresting = "vision_interesting"
+        case dtcCount = "dtc_count"
+        case dtcs
+    }
+}
