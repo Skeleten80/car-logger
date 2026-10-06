@@ -119,3 +119,25 @@ $120–200 CAD in parts. A shelf replacement engine harness (e.g. Wiring
 Specialties) runs several times that — this sub-harness is the
 cost-effective middle ground, and it targets the exact circuit your
 symptoms implicate.
+
+## Appendix: DH61 igniter connector (from community 2JZ-GTE VVTi diagram)
+
+Reference only — verify on your car before cutting anything.
+
+| Pin | Name | Function |
+|-----|------|----------|
+| 10 | COIL 1+6 | trigger → coil pack (cylinders 1+6) |
+| 9 | +B | switched 12V feed — daisy-chains to all 3 coil packs |
+| 8 | TAC | tacho output → ECU |
+| 7 | T1 | IGT1 trigger ← ECU |
+| 6 | T2 | IGT2 trigger ← ECU |
+| 5 | T3 | IGT3 trigger ← ECU |
+| 4 | IGF | ignition feedback → ECU |
+| 3 | GND | igniter ground |
+| 2 | COIL 3+4 | trigger → coil pack (cylinders 3+4) |
+| 1 | COIL 2+5 | trigger → coil pack (cylinders 2+5) |
+
+Note the +B daisy-chain: the red feed runs igniter pin 9 → coil 1 → coil 3
+→ coil 2. A bad joint *between* packs starves everything downstream of it —
+when inspecting the old harness, note exactly where the repaired clip sits
+in that chain.
