@@ -120,24 +120,44 @@ Specialties) runs several times that — this sub-harness is the
 cost-effective middle ground, and it targets the exact circuit your
 symptoms implicate.
 
-## Appendix: DH61 igniter connector (from community 2JZ-GTE VVTi diagram)
+## Appendix: DH61 igniter connector (verified 2026-10-06)
 
-Reference only — verify on your car before cutting anything.
+Cross-checked against independent sources: Haltech's 1JZ/2JZ igniter tech
+doc (the igniter-body labels match the pin order below in reverse),
+2jzgarage's corrected diagram (checked against the IS300 workshop manual
+and Japanese wiring diagrams), Wiring Specialties' JZA80 VVTi pinout, and
+wilbo666's JZS161 Aristo wiring page. **It applies identically to the JZA80
+Supra and your JZS161 Aristo** — same igniter (Toyota P/N 89621-30020; the
+DH61 Lexus and DS62 Toyota versions are interchangeable) and same wiring.
+Your chassis-specific reference: wilbo666's JZS161 page
+(http://wilbo666.pbworks.com/w/page/42173082/2JZ-GTE%20VVTi%20JZS161%20Aristo%20Engine%20Wiring).
 
 | Pin | Name | Function |
 |-----|------|----------|
 | 10 | COIL 1+6 | trigger → coil pack (cylinders 1+6) |
-| 9 | +B | switched 12V feed — daisy-chains to all 3 coil packs |
+| 9 | +B | switched 12V feed — common feed to igniter + all 3 coil packs |
 | 8 | TAC | tacho output → ECU |
 | 7 | T1 | IGT1 trigger ← ECU |
 | 6 | T2 | IGT2 trigger ← ECU |
 | 5 | T3 | IGT3 trigger ← ECU |
 | 4 | IGF | ignition feedback → ECU |
-| 3 | GND | igniter ground |
+| 3 | GND | igniter ground (to cylinder head) |
 | 2 | COIL 3+4 | trigger → coil pack (cylinders 3+4) |
 | 1 | COIL 2+5 | trigger → coil pack (cylinders 2+5) |
 
-Note the +B daisy-chain: the red feed runs igniter pin 9 → coil 1 → coil 3
-→ coil 2. A bad joint *between* packs starves everything downstream of it —
-when inspecting the old harness, note exactly where the repaired clip sits
-in that chain.
+Notes:
+- The igniter switches each coil primary on the -ve wire (fires on the
+  falling edge, +5V→0V). There is **no chassis-ground wire** on the 2-pin
+  coil connectors — only +B and the switched -ve.
+- +B reality check: in the factory loom the feed is a common splice at the
+  body-loom plug (BF2 pin 6 on the JZS161; BC1 pin 1 on the Supra), not
+  literally routed out of igniter pin 9 — electrically equivalent, but the
+  splice point is the single starvation point for all three packs. When
+  inspecting the old harness, find that splice and note exactly where the
+  repaired clip sits relative to it.
+- JZS161 vs Supra surroundings differ even though the igniter circuit is
+  identical: ECU plug B1 (Supra: B74); body-loom +B feed at BF2 pin 6
+  (Supra: BC1 pin 1).
+- Still unverifiable in any published source: which cavity of the 2-pin
+  coil connector is +B vs trigger. Use the wire color (black/white = +B)
+  and the key-ON 12V check on your car.
