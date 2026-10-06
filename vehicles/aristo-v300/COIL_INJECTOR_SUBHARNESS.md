@@ -31,11 +31,14 @@ and injectors. Target: eliminate 29-year-old wiring as a variable.
         (2-pin Denso)                             (2-pin Denso top-slot)
 ```
 
-- **Coil branch:** per pack — Pin A: +B (switched 12V, EFI relay circuit);
+- **Coil branch:** per pack — Pin A: +B (switched 12V, EFI relay circuit;
+  factory wire is black with a thin white stripe — confirmed on this car
+  Oct 6, 2026);
   Pin B: trigger return to the igniter. **Verify pin assignment on your car**
   (key ON: +B reads ~12V; other pin shows continuity to the igniter
   connector with igniter unplugged).
-- **Injector branch:** per injector — Pin 1: +B (common switched 12V);
+- **Injector branch:** per injector — Pin 1: +B (common switched 12V, same
+  black/white factory feed);
   Pin 2: ECU-switched ground (individual per cylinder, #10–#60). **Verify:**
   +B reads ~12V key ON; signal pin shows continuity to the ECU injector
   pins with the ECU unplugged (or use a noid light with engine running).
