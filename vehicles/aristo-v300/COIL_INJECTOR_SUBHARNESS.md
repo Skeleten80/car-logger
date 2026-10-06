@@ -132,8 +132,9 @@ DH61 Lexus and DS62 Toyota versions are interchangeable) and same wiring.
 Your chassis-specific reference: wilbo666's JZS161 page
 (http://wilbo666.pbworks.com/w/page/42173082/2JZ-GTE%20VVTi%20JZS161%20Aristo%20Engine%20Wiring).
 
-Wiring diagram — physical engine-bay layout (inline-6, packs in 1-3-2 order,
-igniter + ECU placed schematically), generated from these verified findings:
+Wiring diagram — physical engine-bay layout (inline-6, packs in 1-3-2 order;
+igniter drawn as the DH61 unit with its embossed pin order, strut-tower
+mounted per the owner's bay photo), generated from these verified findings:
 [DH61_igniter_verified.svg](DH61_igniter_verified.svg) (vector, for print/zoom) ·
 [DH61_igniter_verified.png](DH61_igniter_verified.png) (for phone reference).
 Regenerate with `python3 make_diagram.py` (needs cairosvg for the PNG).

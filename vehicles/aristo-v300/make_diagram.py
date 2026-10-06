@@ -55,17 +55,17 @@ txt(700, 72, "JZS161 Aristo V300 · physical layout · verified 2026-10-06 · al
     size=14, color=GREY)
 
 # ---- BF2 plug (bottom-left; feed runs up the left side to the rail) ----
-box(60, 640, 240, 110, "Body loom plug BF2",
+box(60, 710, 240, 110, "Body loom plug BF2",
     [("front, passenger side of bay", 12.5, GREY), ("pin 6: power to coils + igniter", 14, RED)], tsize=16)
-line(180, 640, 180, 615, RED, 4)
+line(180, 710, 180, 688, RED, 4)
 
 # ---- +B rail ----
 line(40, 120, 1000, 120, RED, 4)
 txt(300, 108, "Switched +12V (ignition RUN/CRANK)", size=14, color=RED, anchor="start")
 A("<circle cx='650' cy='120' r='6' fill='#d62728'/>")
 txt(664, 125, "factory splice", size=13, color=RED, anchor="start")
-line(40, 120, 40, 615, RED, 4)
-line(40, 615, 520, 615, RED, 4)
+line(40, 120, 40, 688, RED, 4)
+line(40, 688, 478, 688, RED, 4)
 for cx in (225, 525, 825):
     line(cx, 120, cx, 170, RED, 4)
 
@@ -104,21 +104,34 @@ poly("225,265 225,545 660,545 660,620", BLK, 3)
 poly("525,265 525,565 740,565 740,620", BLK, 3)
 poly("825,265 825,585 820,585 820,620", BLK, 3)
 
-# ---- igniter (bay location unverified: dashed) ----
-box(520, 620, 420, 260, "DH61 / DS62 igniter",
-    [("Toyota 89621-30020", 12.5, GREY), ("bay location: confirm on your car", 12, "#888888",)], tsize=18, dashed=True)
-for y, t, col in [(734, "+B · pin 9", RED), (762, "10: COIL 1+6 -&gt; PACK 1", BLK),
-                  (790, "2: COIL 3+4 -&gt; PACK 3", BLK), (818, "1: COIL 2+5 -&gt; PACK 2", BLK)]:
-    txt(545, y, t, size=15, color=col, anchor="start")
-for y, t, col in [(734, "T1 (pin 7) &lt;- IGT1", ORG), (762, "T2 (pin 6) &lt;- IGT2", ORG),
-                  (790, "T3 (pin 5) &lt;- IGT3", ORG), (818, "IGF (pin 4) -&gt; ECU", BLU),
-                  (846, "TAC (pin 8) -&gt; ECU", BLU)]:
-    txt(745, y, t, size=15, color=col, anchor="start")
+# ---- igniter: drawn like the real DH61 (black box, sticker, embossed pin names) ----
+# owner's photo: strut-tower mounted; embossed top->bottom: C1,+B,TAC,T1,T2,T3,IGF,GND,C3,C2
+A("<rect x='520' y='620' width='420' height='260' rx='12' fill='#1a1a1a'/>")
+# connector block on the left edge, 10 pins
+A("<rect x='478' y='648' width='52' height='204' rx='6' fill='#2e2e2e' stroke='#000000' stroke-width='2'/>")
+for i in range(10):
+    A(f"<circle cx='504' cy='{664 + i*19}' r='4' fill='#777777'/>")
+# embossed pin names, as on the unit
+for i, nm in enumerate(["C1", "+B", "TAC", "T1", "T2", "T3", "IGF", "GND", "C3", "C2"]):
+    txt(542, 669 + i * 19, nm, size=14, color="#e8e8e8", anchor="start")
+# DH61 sticker (red/white, like the unit label)
+A("<rect x='690' y='688' width='210' height='104' rx='4' fill='#ffffff'/>")
+A("<rect x='690' y='688' width='210' height='42' rx='4' fill='#d62728'/>")
+A("<rect x='690' y='706' width='210' height='24' fill='#d62728'/>")
+txt(795, 716, "DH61 IGNITER", size=20, color="#ffffff", bold=True)
+txt(795, 752, "TOYOTA", size=17, color="#d62728", bold=True)
+txt(795, 772, "89621-30020", size=13, color="#333333")
+txt(795, 788, "12V   JAPAN", size=11, color="#777777")
+# top-edge trigger entries, tagged with embossed names
+txt(660, 612, "C1", size=12)
+txt(740, 612, "C3", size=12)
+txt(820, 612, "C2", size=12)
 # igniter ground
 line(850, 880, 850, 928, BLK, 3)
 for gw, gy in ((46, 928), (30, 937), (14, 946)):
     line(850 - gw / 2, gy, 850 + gw / 2, gy, BLK, 3)
-txt(850, 968, "GND -&gt; cyl head", size=13, anchor="middle")
+txt(850, 968, "GND -&gt; body ground", size=13, anchor="middle")
+txt(520, 905, "mounted on strut tower (your photo)", size=13, color=GREY, anchor="start")
 
 # ---- ECU ----
 box(990, 620, 250, 260, "ECU", [("plug B1 (JZS161)", 12.5, GREY)], tsize=18)
@@ -141,7 +154,7 @@ notes = [
     "Packs sit on the valve cover in physical order 1 - 3 - 2, front to back (per 2jzgarage / IS300 manual). Each fires its wasted-spark pair.",
     "Factory +B splices at body-loom plug BF2 pin 6 -- the single starvation point for all three packs. T1/T2/T3 = igniter-body labels for ECU IGT1/2/3; coils fire on the falling edge (+5V -&gt; 0V).",
     "2-pin coil connectors carry +B and the switched -ve only -- no chassis-ground wire. Cavity orientation is undocumented: use the black/white wire + key-ON 12V check.",
-    "DH61 (Lexus) and DS62 (Toyota) igniters are interchangeable. Igniter bay location not verified -- confirm on your car.",
+    "DH61 (Lexus) and DS62 (Toyota) igniters are interchangeable. Pin order as embossed on your unit, top to bottom: C1, +B, TAC, T1, T2, T3, IGF, GND, C3, C2 = pins 10 down to 1.",
 ]
 yy = 982
 for n in notes:
