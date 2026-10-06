@@ -81,15 +81,17 @@ txt(150, 514, "FRONT (timing belt)", size=13, color=GREY, anchor="start")
 txt(1050, 514, "REAR", size=13, color=GREY, anchor="end")
 
 # ---- coil packs (physical order 1, 3, 2 front to back) ----
-packs = [(225, "1", "1 + 6", "10"), (525, "3", "3 + 4", "2"), (825, "2", "2 + 5", "1")]
-for cx, num, pair, pin in packs:
+# trigger take-off at the pack's right edge so the wire drops through the
+# gap between cylinders instead of through the cylinder numbers
+packs = [(225, "1", "1 + 6", "10", 300), (525, "3", "3 + 4", "2", 600), (825, "2", "2 + 5", "1", 900)]
+for cx, num, pair, pin, tx in packs:
     A(f"<rect x='{cx - 85}' y='170' width='170' height='95' rx='8' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>")
     txt(cx, 196, f"PACK {num}", size=16, bold=True)
     txt(cx, 216, f"fires {pair}", size=13, color=GREY)
     txt(cx, 236, "+B: blk/wht", size=12.5, color=RED)
     txt(cx, 254, f"trig -ve (pin {pin})", size=12.5)
     A(f"<circle cx='{cx}' cy='170' r='4.5' fill='{RED}'/>")
-    A(f"<circle cx='{cx}' cy='265' r='4.5' fill='{BLK}'/>")
+    A(f"<circle cx='{tx}' cy='265' r='4.5' fill='{BLK}'/>")
 
 # ---- HT leads ----
 line(225, 265, 225, 320, HT, 2)
@@ -99,10 +101,10 @@ poly("610,280 675,280 675,320", HT, 2)
 line(825, 265, 825, 320, HT, 2)
 poly("740,292 375,292 375,320", HT, 2)
 
-# ---- trigger wires (igniter -> packs) ----
-poly("225,265 225,545 660,545 660,620", BLK, 3)
-poly("525,265 525,565 740,565 740,620", BLK, 3)
-poly("825,265 825,585 820,585 820,620", BLK, 3)
+# ---- trigger wires (igniter -> packs), dropped through inter-cylinder gaps ----
+poly("300,265 300,545 660,545 660,620", BLK, 3)
+poly("600,265 600,565 740,565 740,620", BLK, 3)
+poly("900,265 900,585 820,585 820,620", BLK, 3)
 
 # ---- igniter: drawn like the real DH61 (black box, sticker, embossed pin names) ----
 # owner's photo: strut-tower mounted; embossed top->bottom: C1,+B,TAC,T1,T2,T3,IGF,GND,C3,C2
@@ -122,10 +124,10 @@ txt(795, 716, "DH61 IGNITER", size=20, color="#ffffff", bold=True)
 txt(795, 752, "TOYOTA", size=17, color="#d62728", bold=True)
 txt(795, 772, "89621-30020", size=13, color="#333333")
 txt(795, 788, "12V   JAPAN", size=11, color="#777777")
-# top-edge trigger entries, tagged with embossed names
-txt(660, 612, "C1", size=12)
-txt(740, 612, "C3", size=12)
-txt(820, 612, "C2", size=12)
+# top-edge trigger entries, tagged with embossed names (inside the box, clear of the wires)
+txt(660, 644, "C1", size=12, color="#ffffff")
+txt(740, 644, "C3", size=12, color="#ffffff")
+txt(820, 644, "C2", size=12, color="#ffffff")
 # igniter ground
 line(850, 880, 850, 928, BLK, 3)
 for gw, gy in ((46, 928), (30, 937), (14, 946)):
