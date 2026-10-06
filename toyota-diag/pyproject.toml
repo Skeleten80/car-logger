@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toyota-diag"
+version = "0.1.0"
+description = "Free, open-source K-Line diagnostic prober for 1990s-2000s JDM Toyotas (e.g. JZS161 Aristo)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Skeleten80" }]
+dependencies = ["pyserial>=3.5"]
+
+[project.scripts]
+toyota-diag = "toyotadiag.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["toyotadiag*"]

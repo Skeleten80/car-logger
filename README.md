@@ -173,6 +173,16 @@ can actually learn from after a drive:
   offline in the car). The NMEA parser is unit-tested; the serial path
   needs the dongle and hasn't run against real hardware yet.
 
+### toyota-diag/ — free K-Line diagnostics for '90s–'00s JDM Toyotas
+
+The JZS161 Aristo's ECU ignores generic OBD-II scanners, so this
+sub-project (`toyota-diag/`, its own README) is a from-scratch Python
+diagnostic tool: ELM327 driver, K-Line probe attempts (ISO 9141-2,
+KWP2000 slow/fast init, Toyota extended mode `$21`), JSONL logging of
+every byte, and generic OBD-II decoders. v0.1 is a deliberately
+read-only discovery instrument — 25/25 tests green. See
+`toyota-diag/README.md` for the probe → log → decode roadmap.
+
 ## On the M6 Mini (with a USB-CAN adapter)
 
 1. **Adapter driver** (macOS has no SocketCAN; each vendor needs its backend):
