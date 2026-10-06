@@ -10,7 +10,7 @@
 <line x1='40' y1='120' x2='1000' y2='120' stroke='#d62728' stroke-width='4'/>
 <text x='300' y='108' text-anchor='start' font-family='sans-serif' font-size='14' fill='#d62728'>Switched +12V (ignition RUN/CRANK)</text>
 <circle cx='650' cy='120' r='6' fill='#d62728'/>
-<text x='664' y='125' text-anchor='start' font-family='sans-serif' font-size='13' fill='#d62728'>factory splice</text>
+<text x='664' y='143' text-anchor='start' font-family='sans-serif' font-size='13' fill='#d62728'>factory splice</text>
 <line x1='40' y1='120' x2='40' y2='688' stroke='#d62728' stroke-width='4'/>
 <line x1='40' y1='688' x2='478' y2='688' stroke='#d62728' stroke-width='4'/>
 <line x1='225' y1='120' x2='225' y2='170' stroke='#d62728' stroke-width='4'/>
@@ -74,16 +74,16 @@
 <circle cx='504' cy='797' r='4' fill='#777777'/>
 <circle cx='504' cy='816' r='4' fill='#777777'/>
 <circle cx='504' cy='835' r='4' fill='#777777'/>
-<text x='542' y='669' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>C1</text>
-<text x='542' y='688' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>+B</text>
-<text x='542' y='707' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>TAC</text>
-<text x='542' y='726' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>T1</text>
-<text x='542' y='745' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>T2</text>
-<text x='542' y='764' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>T3</text>
-<text x='542' y='783' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>IGF</text>
-<text x='542' y='802' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>GND</text>
-<text x='542' y='821' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>C3</text>
-<text x='542' y='840' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>C2</text>
+<text x='585' y='669' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>C1</text>
+<text x='585' y='688' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>+B</text>
+<text x='585' y='707' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>TAC</text>
+<text x='585' y='726' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>T1</text>
+<text x='585' y='745' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>T2</text>
+<text x='585' y='764' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>T3</text>
+<text x='585' y='783' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>IGF</text>
+<text x='585' y='802' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>GND</text>
+<text x='585' y='821' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>C3</text>
+<text x='585' y='840' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e8e8e8'>C2</text>
 <rect x='690' y='688' width='210' height='104' rx='4' fill='#ffffff'/>
 <rect x='690' y='688' width='210' height='42' rx='4' fill='#d62728'/>
 <rect x='690' y='706' width='210' height='24' fill='#d62728'/>

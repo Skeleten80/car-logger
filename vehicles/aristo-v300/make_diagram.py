@@ -63,7 +63,7 @@ line(180, 710, 180, 688, RED, 4)
 line(40, 120, 1000, 120, RED, 4)
 txt(300, 108, "Switched +12V (ignition RUN/CRANK)", size=14, color=RED, anchor="start")
 A("<circle cx='650' cy='120' r='6' fill='#d62728'/>")
-txt(664, 125, "factory splice", size=13, color=RED, anchor="start")
+txt(664, 143, "factory splice", size=13, color=RED, anchor="start")
 line(40, 120, 40, 688, RED, 4)
 line(40, 688, 478, 688, RED, 4)
 for cx in (225, 525, 825):
@@ -113,9 +113,9 @@ A("<rect x='520' y='620' width='420' height='260' rx='12' fill='#1a1a1a'/>")
 A("<rect x='478' y='648' width='52' height='204' rx='6' fill='#2e2e2e' stroke='#000000' stroke-width='2'/>")
 for i in range(10):
     A(f"<circle cx='504' cy='{664 + i*19}' r='4' fill='#777777'/>")
-# embossed pin names, as on the unit
+# embossed pin names, as on the unit (kept clear of the +B wire entry)
 for i, nm in enumerate(["C1", "+B", "TAC", "T1", "T2", "T3", "IGF", "GND", "C3", "C2"]):
-    txt(542, 669 + i * 19, nm, size=14, color="#e8e8e8", anchor="start")
+    txt(585, 669 + i * 19, nm, size=14, color="#e8e8e8", anchor="start")
 # DH61 sticker (red/white, like the unit label)
 A("<rect x='690' y='688' width='210' height='104' rx='4' fill='#ffffff'/>")
 A("<rect x='690' y='688' width='210' height='42' rx='4' fill='#d62728'/>")
