@@ -1,142 +1,162 @@
 #!/usr/bin/env python3
-"""Generate a verified 2JZ-GTE VVTi wasted-spark coil + igniter wiring diagram.
+"""Generate a verified 2JZ-GTE VVTi wasted-spark ignition diagram (engine-bay layout).
+
+Physical layout: inline-6 with cylinders 1-6, coil packs on the valve cover in
+physical order 1-3-2 (front to back), igniter as the bay-mounted module.
 
 Findings verified 2026-10-06 against: Haltech 1JZ/2JZ igniter tech doc,
 2jzgarage (IS300 workshop manual / Japanese wiring diagrams), Wiring
 Specialties JZA80 VVTi pinout, wilbo666 JZS161 Aristo wiring page.
 Applies identically to JZS161 Aristo and JZA80 Supra.
+
+Igniter bay location NOT verified -- drawn schematically, confirm on car.
 Outputs: DH61_igniter_verified.svg and DH61_igniter_verified.png
 """
 import shutil
 import subprocess
 
-W, H = 1120, 920
+W, H = 1400, 1080
 RED = "#d62728"      # +B
-BLK = "#1a1a1a"      # coil triggers / ground
+BLK = "#1a1a1a"      # coil triggers
 ORG = "#e67e22"      # ECU IGT outputs
 BLU = "#2471a3"      # IGF / TAC
+HT = "#999999"       # HT leads
 INK = "#1a1a1a"
 GREY = "#6e6e6e"
 
-svg = []
-A = svg.append
+s = []
+A = s.append
 A(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">')
-A('<rect x="0" y="0" width="1120" height="920" fill="#ffffff"/>')
-A('<defs><marker id="dot" markerWidth="8" markerHeight="8" refX="4" refY="4">'
-  '<circle cx="4" cy="4" r="3.2" fill="#d62728"/></marker></defs>')
+A('<rect x="0" y="0" width="1400" height="1080" fill="#ffffff"/>')
+
+def txt(x, y, t, size=14, color=INK, anchor="middle", bold=False, italic=False):
+    w = " font-weight='bold'" if bold else ""
+    st = " font-style='italic'" if italic else ""
+    A(f"<text x='{x}' y='{y}' text-anchor='{anchor}' font-family='sans-serif' font-size='{size}' fill='{color}'{w}{st}>{t}</text>")
+
+def line(x1, y1, x2, y2, color, w=2.5):
+    A(f"<line x1='{x1}' y1='{y1}' x2='{x2}' y2='{y2}' stroke='{color}' stroke-width='{w}'/>")
+
+def poly(pts, color, w=2.5):
+    A(f"<polyline points='{pts}' fill='none' stroke='{color}' stroke-width='{w}'/>")
+
+def box(x, y, w, h, title, subs=(), tsize=18, dashed=False):
+    dash = " stroke-dasharray='10 6'" if dashed else ""
+    A(f"<rect x='{x}' y='{y}' width='{w}' height='{h}' rx='10' fill='#ffffff' stroke='#333333' stroke-width='2.5'{dash}/>")
+    txt(x + w / 2, y + 36, title, size=tsize, bold=True)
+    yy = y + 58
+    for sub, sz, col in subs:
+        txt(x + w / 2, yy, sub, size=sz, color=col)
+        yy += 22
 
 # ---- title ----
-A('<text x="560" y="34" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="#1a1a1a">'
-  '2JZ-GTE VVTi — wasted-spark coil &amp; igniter wiring</text>')
-A('<text x="560" y="58" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#6e6e6e">'
-  'JZS161 Aristo V300 · verified 2026-10-06 · also applies to JZA80 Supra</text>')
+txt(700, 44, "2JZ-GTE VVTi — wasted-spark ignition (engine-bay layout)", size=26, bold=True)
+txt(700, 72, "JZS161 Aristo V300 · physical layout · verified 2026-10-06 · also applies to JZA80 Supra",
+    size=14, color=GREY)
+
+# ---- BF2 plug (bottom-left; feed runs up the left side to the rail) ----
+box(60, 640, 240, 110, "Body loom plug BF2",
+    [("front, passenger side of bay", 12.5, GREY), ("pin 6: power to coils + igniter", 14, RED)], tsize=16)
+line(180, 640, 180, 615, RED, 4)
 
 # ---- +B rail ----
-rail_y = 92
-A(f'<line x1="80" y1="{rail_y}" x2="1050" y2="{rail_y}" stroke="{RED}" stroke-width="3"/>')
-A('<text x="80" y="{0}" font-family="sans-serif" font-size="12.5" fill="{1}">'
-  'Switched +12V -- EFI relay -&gt; body-loom plug BF2 pin 6 (JZS161)</text>'.format(rail_y - 10, RED))
-# splice dot
-A(f'<circle cx="300" cy="{rail_y}" r="5" fill="{RED}"/>')
-A(f'<text x="312" y="{rail_y + 4}" font-family="sans-serif" font-size="12" fill="{RED}">factory splice</text>')
-# drop to igniter pin 9
-A(f'<line x1="550" y1="{rail_y}" x2="550" y2="142" stroke="{RED}" stroke-width="3"/>')
-# drop to coil +B rail on the right
-A(f'<line x1="1050" y1="{rail_y}" x2="1050" y2="512" stroke="{RED}" stroke-width="3"/>')
+line(40, 120, 1000, 120, RED, 4)
+txt(300, 108, "Switched +12V (ignition RUN/CRANK)", size=14, color=RED, anchor="start")
+A("<circle cx='650' cy='120' r='6' fill='#d62728'/>")
+txt(664, 125, "factory splice", size=13, color=RED, anchor="start")
+line(40, 120, 40, 615, RED, 4)
+line(40, 615, 520, 615, RED, 4)
+for cx in (225, 525, 825):
+    line(cx, 120, cx, 170, RED, 4)
 
-def box(x, y, w, h, title, sub=None):
-    A(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="#ffffff" stroke="{INK}" stroke-width="2"/>')
-    A(f'<text x="{x + w/2}" y="{y + 24}" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="{INK}">{title}</text>')
-    if sub:
-        A(f'<text x="{x + w/2}" y="{y + 42}" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="{GREY}">{sub}</text>')
+# ---- valve cover + block ----
+A("<rect x='150' y='240' width='900' height='80' fill='#f5f5f5' stroke='#1a1a1a' stroke-width='2'/>")
+txt(162, 266, "valve cover", size=13, color=GREY, anchor="start")
+A("<rect x='150' y='320' width='900' height='170' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>")
+for dx in (300, 450, 600, 750, 900):
+    line(dx, 320, dx, 490, "#bbbbbb", 1.5)
+for i, cx in enumerate((225, 375, 525, 675, 825, 975)):
+    txt(cx, 418, str(i + 1), size=32, color="#999999", bold=True)
+txt(150, 514, "FRONT (timing belt)", size=13, color=GREY, anchor="start")
+txt(1050, 514, "REAR", size=13, color=GREY, anchor="end")
 
-def pin_label(x, y, text, anchor="start", color=INK, size=12):
-    A(f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-family="sans-serif" font-size="{size}" fill="{color}">{text}</text>')
+# ---- coil packs (physical order 1, 3, 2 front to back) ----
+packs = [(225, "1", "1 + 6", "10"), (525, "3", "3 + 4", "2"), (825, "2", "2 + 5", "1")]
+for cx, num, pair, pin in packs:
+    A(f"<rect x='{cx - 85}' y='170' width='170' height='95' rx='8' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>")
+    txt(cx, 196, f"PACK {num}", size=16, bold=True)
+    txt(cx, 216, f"fires {pair}", size=13, color=GREY)
+    txt(cx, 236, "+B: blk/wht", size=12.5, color=RED)
+    txt(cx, 254, f"trig -ve (pin {pin})", size=12.5)
+    A(f"<circle cx='{cx}' cy='170' r='4.5' fill='{RED}'/>")
+    A(f"<circle cx='{cx}' cy='265' r='4.5' fill='{BLK}'/>")
 
-def wire(x1, y1, x2, y2, color, width=2.5, label=None, lx=None, ly=None):
-    A(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{color}" stroke-width="{width}"/>')
-    if label:
-        A(f'<text x="{lx}" y="{ly}" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="{color}">{label}</text>')
+# ---- HT leads ----
+line(225, 265, 225, 320, HT, 2)
+poly("310,280 975,280 975,320", HT, 2)
+line(525, 265, 525, 320, HT, 2)
+poly("610,280 675,280 675,320", HT, 2)
+line(825, 265, 825, 320, HT, 2)
+poly("740,292 375,292 375,320", HT, 2)
+
+# ---- trigger wires (igniter -> packs) ----
+poly("225,265 225,545 660,545 660,620", BLK, 3)
+poly("525,265 525,565 740,565 740,620", BLK, 3)
+poly("825,265 825,585 820,585 820,620", BLK, 3)
+
+# ---- igniter (bay location unverified: dashed) ----
+box(520, 620, 420, 260, "DH61 / DS62 igniter",
+    [("Toyota 89621-30020", 12.5, GREY), ("bay location: confirm on your car", 12, "#888888",)], tsize=18, dashed=True)
+for y, t, col in [(734, "+B · pin 9", RED), (762, "10: COIL 1+6 -&gt; PACK 1", BLK),
+                  (790, "2: COIL 3+4 -&gt; PACK 3", BLK), (818, "1: COIL 2+5 -&gt; PACK 2", BLK)]:
+    txt(545, y, t, size=15, color=col, anchor="start")
+for y, t, col in [(734, "T1 (pin 7) &lt;- IGT1", ORG), (762, "T2 (pin 6) &lt;- IGT2", ORG),
+                  (790, "T3 (pin 5) &lt;- IGT3", ORG), (818, "IGF (pin 4) -&gt; ECU", BLU),
+                  (846, "TAC (pin 8) -&gt; ECU", BLU)]:
+    txt(745, y, t, size=15, color=col, anchor="start")
+# igniter ground
+line(850, 880, 850, 928, BLK, 3)
+for gw, gy in ((46, 928), (30, 937), (14, 946)):
+    line(850 - gw / 2, gy, 850 + gw / 2, gy, BLK, 3)
+txt(850, 968, "GND -&gt; cyl head", size=13, anchor="middle")
 
 # ---- ECU ----
-box(30, 170, 200, 380, "ECU", "plug B1 (JZS161)")
-ecu_pins = [("IGT1 -&gt;", 232, ORG), ("IGT2 -&gt;", 282, ORG), ("IGT3 -&gt;", 332, ORG),
-            ("IGF &lt;-", 402, BLU), ("TAC &lt;-", 452, BLU)]
-for name, y, color in ecu_pins:
-    pin_label(200, y + 4, name, anchor="end", color=color)
+box(990, 620, 250, 260, "ECU", [("plug B1 (JZS161)", 12.5, GREY)], tsize=18)
+for y, name, col in [(734, "IGT1", ORG), (762, "IGT2", ORG), (790, "IGT3", ORG),
+                     (818, "IGF", BLU), (846, "TAC", BLU)]:
+    line(940, y, 990, y, col, 3)
+    txt(1000, y + 5, name, size=14, color=col, anchor="start")
 
-# ---- igniter ----
-box(420, 130, 260, 500, "DH61 / DS62 igniter", "Toyota 89621-30020")
-ign_left = [("pin 7 · T1", 232, ORG), ("pin 6 · T2", 282, ORG), ("pin 5 · T3", 332, ORG),
-            ("pin 4 · IGF", 402, BLU), ("pin 8 · TAC", 452, BLU)]
-for name, y, color in ign_left:
-    pin_label(430, y + 4, name, color=color)
-ign_right = [("pin 10 · COIL 1+6", 202, BLK), ("pin 1 · COIL 2+5", 322, BLK), ("pin 2 · COIL 3+4", 442, BLK)]
-for name, y, color in ign_right:
-    pin_label(670, y + 4, name, anchor="end", color=color)
-pin_label(560, 126, "pin 9 · +B", anchor="middle", color=RED)
-pin_label(560, 646, "pin 3 · GND", anchor="middle", color=BLK)
-
-# ---- coil packs ----
-coils = [("Coil pack -- cyl 1+6", 140, 202, 232),
-         ("Coil pack -- cyl 2+5", 280, 342, 372),
-         ("Coil pack -- cyl 3+4", 420, 482, 512)]
-for title, y, ty, py in coils:
-    box(850, y, 200, 120, title, "90919-02216 - 2-pin")
-    pin_label(860, ty + 4, "trigger (-ve)", color=BLK)
-    pin_label(1040, py + 4, "+B - blk/wht", anchor="end", color=RED)
-
-# ---- wires: ECU <-> igniter ----
-wire(230, 232, 420, 232, ORG); wire(230, 282, 420, 282, ORG); wire(230, 332, 420, 332, ORG)
-A('<text x="325" y="222" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22">IGT1</text>')
-A('<text x="325" y="272" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22">IGT2</text>')
-A('<text x="325" y="322" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22">IGT3</text>')
-wire(230, 402, 420, 402, BLU)
-wire(230, 452, 420, 452, BLU)
-A('<text x="325" y="392" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2471a3">IGF</text>')
-A('<text x="325" y="442" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2471a3">TAC</text>')
-
-# ---- wires: igniter -> coil triggers ----
-wire(680, 202, 850, 202, BLK)
-wire(680, 322, 850, 342, BLK)
-wire(680, 442, 850, 482, BLK)
-
-# ---- ground ----
-A('<line x1="550" y1="630" x2="550" y2="686" stroke="#1a1a1a" stroke-width="2.5"/>')
-for i, (gw, gy) in enumerate([(44, 686), (28, 694), (12, 702)]):
-    A(f'<line x1="{550 - gw/2}" y1="{gy}" x2="{550 + gw/2}" y2="{gy}" stroke="#1a1a1a" stroke-width="2.5"/>')
-A('<text x="550" y="722" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1a1a1a">GND -&gt; cylinder head</text>')
+# ---- legend ----
+A("<rect x='1070' y='150' width='290' height='175' rx='10' fill='#ffffff' stroke='#333333' stroke-width='2'/>")
+txt(1215, 180, "Wire colors", size=16, bold=True)
+for y, col, label in [(208, RED, "+B (12V switched)"), (234, BLK, "coil trigger (-ve)"),
+                      (260, ORG, "ECU IGT1 / 2 / 3"), (286, BLU, "IGF / TAC"), (312, HT, "HT leads")]:
+    line(1088, y - 4, 1128, y - 4, col, 4)
+    txt(1138, y, label, size=14, anchor="start")
 
 # ---- notes ----
+A("<line x1='40' y1='956' x2='1360' y2='956' stroke='#cccccc' stroke-width='1'/>")
 notes = [
-    "T1/T2/T3 are the igniter-body labels for the ECU's IGT1/IGT2/IGT3. Coils fire on the falling edge (+5V -&gt; 0V), constant charge.",
-    "The 2-pin coil connectors carry +B and the switched -ve only -- there is no chassis-ground wire on the coil.",
-    "Factory +B is a common splice at the body-loom plug (BF2 pin 6), not a daisy-chain out of the igniter -- the splice is the single starvation point for all three packs.",
-    "Coil connector cavity orientation (+B vs trigger) is undocumented: identify +B by the black/white wire and a key-ON 12V check.",
-    "DH61 (Lexus) and DS62 (Toyota) igniters are interchangeable. Sources: Haltech 1JZ/2JZ tech doc, 2jzgarage, Wiring Specialties, wilbo666 JZS161 page.",
+    "Packs sit on the valve cover in physical order 1 - 3 - 2, front to back (per 2jzgarage / IS300 manual). Each fires its wasted-spark pair.",
+    "Factory +B splices at body-loom plug BF2 pin 6 -- the single starvation point for all three packs. T1/T2/T3 = igniter-body labels for ECU IGT1/2/3; coils fire on the falling edge (+5V -&gt; 0V).",
+    "2-pin coil connectors carry +B and the switched -ve only -- no chassis-ground wire. Cavity orientation is undocumented: use the black/white wire + key-ON 12V check.",
+    "DH61 (Lexus) and DS62 (Toyota) igniters are interchangeable. Igniter bay location not verified -- confirm on your car.",
 ]
-ny = 762
-A(f'<line x1="30" y1="{ny - 18}" x2="1090" y2="{ny - 18}" stroke="#cccccc" stroke-width="1"/>')
+yy = 982
 for n in notes:
-    A(f'<text x="40" y="{ny}" font-family="sans-serif" font-size="12.5" fill="#333333">• {n}</text>')
-    ny += 26
+    txt(40, yy, "•  " + n, size=15, color="#333333", anchor="start")
+    yy += 24
 
-A('</svg>')
+A("</svg>")
 
 outdir = "/home/hatch/workspace/car-logger/vehicles/aristo-v300"
 svg_path = f"{outdir}/DH61_igniter_verified.svg"
 png_path = f"{outdir}/DH61_igniter_verified.png"
 with open(svg_path, "w") as f:
-    f.write("\n".join(svg))
+    f.write("\n".join(s))
 print("wrote", svg_path)
 
-# convert to PNG if a converter exists
-for tool, args in [("rsvg-convert", ["rsvg-convert", "-w", "1680", "-h", "1380", "-o", png_path, svg_path]),
-                   ("inkscape", ["inkscape", svg_path, "--export-type=png", f"--export-filename={png_path}", "-w", "1680"]),
-                   ("convert", ["convert", "-density", "150", "-background", "white", svg_path, png_path])]:
-    if shutil.which(tool):
-        subprocess.run(args, check=True)
-        print("converted with", tool, "->", png_path)
-        break
-else:
-    print("NO_SVG_CONVERTER")
+import cairosvg
+cairosvg.svg2png(url=svg_path, write_to=png_path, output_width=1960, output_height=1512)
+print("wrote", png_path)

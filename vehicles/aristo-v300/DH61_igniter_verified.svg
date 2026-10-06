@@ -1,72 +1,113 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="920" viewBox="0 0 1120 920">
-<rect x="0" y="0" width="1120" height="920" fill="#ffffff"/>
-<defs><marker id="dot" markerWidth="8" markerHeight="8" refX="4" refY="4"><circle cx="4" cy="4" r="3.2" fill="#d62728"/></marker></defs>
-<text x="560" y="34" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="#1a1a1a">2JZ-GTE VVTi — wasted-spark coil &amp; igniter wiring</text>
-<text x="560" y="58" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#6e6e6e">JZS161 Aristo V300 · verified 2026-10-06 · also applies to JZA80 Supra</text>
-<line x1="80" y1="92" x2="1050" y2="92" stroke="#d62728" stroke-width="3"/>
-<text x="80" y="82" font-family="sans-serif" font-size="12.5" fill="#d62728">Switched +12V -- EFI relay -&gt; body-loom plug BF2 pin 6 (JZS161)</text>
-<circle cx="300" cy="92" r="5" fill="#d62728"/>
-<text x="312" y="96" font-family="sans-serif" font-size="12" fill="#d62728">factory splice</text>
-<line x1="550" y1="92" x2="550" y2="142" stroke="#d62728" stroke-width="3"/>
-<line x1="1050" y1="92" x2="1050" y2="512" stroke="#d62728" stroke-width="3"/>
-<rect x="30" y="170" width="200" height="380" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
-<text x="130.0" y="194" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a">ECU</text>
-<text x="130.0" y="212" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#6e6e6e">plug B1 (JZS161)</text>
-<text x="200" y="236" text-anchor="end" font-family="sans-serif" font-size="12" fill="#e67e22">IGT1 -&gt;</text>
-<text x="200" y="286" text-anchor="end" font-family="sans-serif" font-size="12" fill="#e67e22">IGT2 -&gt;</text>
-<text x="200" y="336" text-anchor="end" font-family="sans-serif" font-size="12" fill="#e67e22">IGT3 -&gt;</text>
-<text x="200" y="406" text-anchor="end" font-family="sans-serif" font-size="12" fill="#2471a3">IGF &lt;-</text>
-<text x="200" y="456" text-anchor="end" font-family="sans-serif" font-size="12" fill="#2471a3">TAC &lt;-</text>
-<rect x="420" y="130" width="260" height="500" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
-<text x="550.0" y="154" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a">DH61 / DS62 igniter</text>
-<text x="550.0" y="172" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#6e6e6e">Toyota 89621-30020</text>
-<text x="430" y="236" text-anchor="start" font-family="sans-serif" font-size="12" fill="#e67e22">pin 7 · T1</text>
-<text x="430" y="286" text-anchor="start" font-family="sans-serif" font-size="12" fill="#e67e22">pin 6 · T2</text>
-<text x="430" y="336" text-anchor="start" font-family="sans-serif" font-size="12" fill="#e67e22">pin 5 · T3</text>
-<text x="430" y="406" text-anchor="start" font-family="sans-serif" font-size="12" fill="#2471a3">pin 4 · IGF</text>
-<text x="430" y="456" text-anchor="start" font-family="sans-serif" font-size="12" fill="#2471a3">pin 8 · TAC</text>
-<text x="670" y="206" text-anchor="end" font-family="sans-serif" font-size="12" fill="#1a1a1a">pin 10 · COIL 1+6</text>
-<text x="670" y="326" text-anchor="end" font-family="sans-serif" font-size="12" fill="#1a1a1a">pin 1 · COIL 2+5</text>
-<text x="670" y="446" text-anchor="end" font-family="sans-serif" font-size="12" fill="#1a1a1a">pin 2 · COIL 3+4</text>
-<text x="560" y="126" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#d62728">pin 9 · +B</text>
-<text x="560" y="646" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1a1a1a">pin 3 · GND</text>
-<rect x="850" y="140" width="200" height="120" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
-<text x="950.0" y="164" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a">Coil pack -- cyl 1+6</text>
-<text x="950.0" y="182" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#6e6e6e">90919-02216 - 2-pin</text>
-<text x="860" y="206" text-anchor="start" font-family="sans-serif" font-size="12" fill="#1a1a1a">trigger (-ve)</text>
-<text x="1040" y="236" text-anchor="end" font-family="sans-serif" font-size="12" fill="#d62728">+B - blk/wht</text>
-<rect x="850" y="280" width="200" height="120" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
-<text x="950.0" y="304" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a">Coil pack -- cyl 2+5</text>
-<text x="950.0" y="322" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#6e6e6e">90919-02216 - 2-pin</text>
-<text x="860" y="346" text-anchor="start" font-family="sans-serif" font-size="12" fill="#1a1a1a">trigger (-ve)</text>
-<text x="1040" y="376" text-anchor="end" font-family="sans-serif" font-size="12" fill="#d62728">+B - blk/wht</text>
-<rect x="850" y="420" width="200" height="120" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
-<text x="950.0" y="444" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a">Coil pack -- cyl 3+4</text>
-<text x="950.0" y="462" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#6e6e6e">90919-02216 - 2-pin</text>
-<text x="860" y="486" text-anchor="start" font-family="sans-serif" font-size="12" fill="#1a1a1a">trigger (-ve)</text>
-<text x="1040" y="516" text-anchor="end" font-family="sans-serif" font-size="12" fill="#d62728">+B - blk/wht</text>
-<line x1="230" y1="232" x2="420" y2="232" stroke="#e67e22" stroke-width="2.5"/>
-<line x1="230" y1="282" x2="420" y2="282" stroke="#e67e22" stroke-width="2.5"/>
-<line x1="230" y1="332" x2="420" y2="332" stroke="#e67e22" stroke-width="2.5"/>
-<text x="325" y="222" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22">IGT1</text>
-<text x="325" y="272" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22">IGT2</text>
-<text x="325" y="322" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22">IGT3</text>
-<line x1="230" y1="402" x2="420" y2="402" stroke="#2471a3" stroke-width="2.5"/>
-<line x1="230" y1="452" x2="420" y2="452" stroke="#2471a3" stroke-width="2.5"/>
-<text x="325" y="392" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2471a3">IGF</text>
-<text x="325" y="442" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2471a3">TAC</text>
-<line x1="680" y1="202" x2="850" y2="202" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="680" y1="322" x2="850" y2="342" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="680" y1="442" x2="850" y2="482" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="550" y1="630" x2="550" y2="686" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="528.0" y1="686" x2="572.0" y2="686" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="536.0" y1="694" x2="564.0" y2="694" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="544.0" y1="702" x2="556.0" y2="702" stroke="#1a1a1a" stroke-width="2.5"/>
-<text x="550" y="722" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1a1a1a">GND -&gt; cylinder head</text>
-<line x1="30" y1="744" x2="1090" y2="744" stroke="#cccccc" stroke-width="1"/>
-<text x="40" y="762" font-family="sans-serif" font-size="12.5" fill="#333333">• T1/T2/T3 are the igniter-body labels for the ECU's IGT1/IGT2/IGT3. Coils fire on the falling edge (+5V -&gt; 0V), constant charge.</text>
-<text x="40" y="788" font-family="sans-serif" font-size="12.5" fill="#333333">• The 2-pin coil connectors carry +B and the switched -ve only -- there is no chassis-ground wire on the coil.</text>
-<text x="40" y="814" font-family="sans-serif" font-size="12.5" fill="#333333">• Factory +B is a common splice at the body-loom plug (BF2 pin 6), not a daisy-chain out of the igniter -- the splice is the single starvation point for all three packs.</text>
-<text x="40" y="840" font-family="sans-serif" font-size="12.5" fill="#333333">• Coil connector cavity orientation (+B vs trigger) is undocumented: identify +B by the black/white wire and a key-ON 12V check.</text>
-<text x="40" y="866" font-family="sans-serif" font-size="12.5" fill="#333333">• DH61 (Lexus) and DS62 (Toyota) igniters are interchangeable. Sources: Haltech 1JZ/2JZ tech doc, 2jzgarage, Wiring Specialties, wilbo666 JZS161 page.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1080" viewBox="0 0 1400 1080">
+<rect x="0" y="0" width="1400" height="1080" fill="#ffffff"/>
+<text x='700' y='44' text-anchor='middle' font-family='sans-serif' font-size='26' fill='#1a1a1a' font-weight='bold'>2JZ-GTE VVTi — wasted-spark ignition (engine-bay layout)</text>
+<text x='700' y='72' text-anchor='middle' font-family='sans-serif' font-size='14' fill='#6e6e6e'>JZS161 Aristo V300 · physical layout · verified 2026-10-06 · also applies to JZA80 Supra</text>
+<rect x='60' y='640' width='240' height='110' rx='10' fill='#ffffff' stroke='#333333' stroke-width='2.5'/>
+<text x='180.0' y='676' text-anchor='middle' font-family='sans-serif' font-size='16' fill='#1a1a1a' font-weight='bold'>Body loom plug BF2</text>
+<text x='180.0' y='698' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#6e6e6e'>front, passenger side of bay</text>
+<text x='180.0' y='720' text-anchor='middle' font-family='sans-serif' font-size='14' fill='#d62728'>pin 6: power to coils + igniter</text>
+<line x1='180' y1='640' x2='180' y2='615' stroke='#d62728' stroke-width='4'/>
+<line x1='40' y1='120' x2='1000' y2='120' stroke='#d62728' stroke-width='4'/>
+<text x='300' y='108' text-anchor='start' font-family='sans-serif' font-size='14' fill='#d62728'>Switched +12V (ignition RUN/CRANK)</text>
+<circle cx='650' cy='120' r='6' fill='#d62728'/>
+<text x='664' y='125' text-anchor='start' font-family='sans-serif' font-size='13' fill='#d62728'>factory splice</text>
+<line x1='40' y1='120' x2='40' y2='615' stroke='#d62728' stroke-width='4'/>
+<line x1='40' y1='615' x2='520' y2='615' stroke='#d62728' stroke-width='4'/>
+<line x1='225' y1='120' x2='225' y2='170' stroke='#d62728' stroke-width='4'/>
+<line x1='525' y1='120' x2='525' y2='170' stroke='#d62728' stroke-width='4'/>
+<line x1='825' y1='120' x2='825' y2='170' stroke='#d62728' stroke-width='4'/>
+<rect x='150' y='240' width='900' height='80' fill='#f5f5f5' stroke='#1a1a1a' stroke-width='2'/>
+<text x='162' y='266' text-anchor='start' font-family='sans-serif' font-size='13' fill='#6e6e6e'>valve cover</text>
+<rect x='150' y='320' width='900' height='170' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>
+<line x1='300' y1='320' x2='300' y2='490' stroke='#bbbbbb' stroke-width='1.5'/>
+<line x1='450' y1='320' x2='450' y2='490' stroke='#bbbbbb' stroke-width='1.5'/>
+<line x1='600' y1='320' x2='600' y2='490' stroke='#bbbbbb' stroke-width='1.5'/>
+<line x1='750' y1='320' x2='750' y2='490' stroke='#bbbbbb' stroke-width='1.5'/>
+<line x1='900' y1='320' x2='900' y2='490' stroke='#bbbbbb' stroke-width='1.5'/>
+<text x='225' y='418' text-anchor='middle' font-family='sans-serif' font-size='32' fill='#999999' font-weight='bold'>1</text>
+<text x='375' y='418' text-anchor='middle' font-family='sans-serif' font-size='32' fill='#999999' font-weight='bold'>2</text>
+<text x='525' y='418' text-anchor='middle' font-family='sans-serif' font-size='32' fill='#999999' font-weight='bold'>3</text>
+<text x='675' y='418' text-anchor='middle' font-family='sans-serif' font-size='32' fill='#999999' font-weight='bold'>4</text>
+<text x='825' y='418' text-anchor='middle' font-family='sans-serif' font-size='32' fill='#999999' font-weight='bold'>5</text>
+<text x='975' y='418' text-anchor='middle' font-family='sans-serif' font-size='32' fill='#999999' font-weight='bold'>6</text>
+<text x='150' y='514' text-anchor='start' font-family='sans-serif' font-size='13' fill='#6e6e6e'>FRONT (timing belt)</text>
+<text x='1050' y='514' text-anchor='end' font-family='sans-serif' font-size='13' fill='#6e6e6e'>REAR</text>
+<rect x='140' y='170' width='170' height='95' rx='8' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>
+<text x='225' y='196' text-anchor='middle' font-family='sans-serif' font-size='16' fill='#1a1a1a' font-weight='bold'>PACK 1</text>
+<text x='225' y='216' text-anchor='middle' font-family='sans-serif' font-size='13' fill='#6e6e6e'>fires 1 + 6</text>
+<text x='225' y='236' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#d62728'>+B: blk/wht</text>
+<text x='225' y='254' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#1a1a1a'>trig -ve (pin 10)</text>
+<circle cx='225' cy='170' r='4.5' fill='#d62728'/>
+<circle cx='225' cy='265' r='4.5' fill='#1a1a1a'/>
+<rect x='440' y='170' width='170' height='95' rx='8' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>
+<text x='525' y='196' text-anchor='middle' font-family='sans-serif' font-size='16' fill='#1a1a1a' font-weight='bold'>PACK 3</text>
+<text x='525' y='216' text-anchor='middle' font-family='sans-serif' font-size='13' fill='#6e6e6e'>fires 3 + 4</text>
+<text x='525' y='236' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#d62728'>+B: blk/wht</text>
+<text x='525' y='254' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#1a1a1a'>trig -ve (pin 2)</text>
+<circle cx='525' cy='170' r='4.5' fill='#d62728'/>
+<circle cx='525' cy='265' r='4.5' fill='#1a1a1a'/>
+<rect x='740' y='170' width='170' height='95' rx='8' fill='#ffffff' stroke='#1a1a1a' stroke-width='2'/>
+<text x='825' y='196' text-anchor='middle' font-family='sans-serif' font-size='16' fill='#1a1a1a' font-weight='bold'>PACK 2</text>
+<text x='825' y='216' text-anchor='middle' font-family='sans-serif' font-size='13' fill='#6e6e6e'>fires 2 + 5</text>
+<text x='825' y='236' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#d62728'>+B: blk/wht</text>
+<text x='825' y='254' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#1a1a1a'>trig -ve (pin 1)</text>
+<circle cx='825' cy='170' r='4.5' fill='#d62728'/>
+<circle cx='825' cy='265' r='4.5' fill='#1a1a1a'/>
+<line x1='225' y1='265' x2='225' y2='320' stroke='#999999' stroke-width='2'/>
+<polyline points='310,280 975,280 975,320' fill='none' stroke='#999999' stroke-width='2'/>
+<line x1='525' y1='265' x2='525' y2='320' stroke='#999999' stroke-width='2'/>
+<polyline points='610,280 675,280 675,320' fill='none' stroke='#999999' stroke-width='2'/>
+<line x1='825' y1='265' x2='825' y2='320' stroke='#999999' stroke-width='2'/>
+<polyline points='740,292 375,292 375,320' fill='none' stroke='#999999' stroke-width='2'/>
+<polyline points='225,265 225,545 660,545 660,620' fill='none' stroke='#1a1a1a' stroke-width='3'/>
+<polyline points='525,265 525,565 740,565 740,620' fill='none' stroke='#1a1a1a' stroke-width='3'/>
+<polyline points='825,265 825,585 820,585 820,620' fill='none' stroke='#1a1a1a' stroke-width='3'/>
+<rect x='520' y='620' width='420' height='260' rx='10' fill='#ffffff' stroke='#333333' stroke-width='2.5' stroke-dasharray='10 6'/>
+<text x='730.0' y='656' text-anchor='middle' font-family='sans-serif' font-size='18' fill='#1a1a1a' font-weight='bold'>DH61 / DS62 igniter</text>
+<text x='730.0' y='678' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#6e6e6e'>Toyota 89621-30020</text>
+<text x='730.0' y='700' text-anchor='middle' font-family='sans-serif' font-size='12' fill='#888888'>bay location: confirm on your car</text>
+<text x='545' y='734' text-anchor='start' font-family='sans-serif' font-size='15' fill='#d62728'>+B · pin 9</text>
+<text x='545' y='762' text-anchor='start' font-family='sans-serif' font-size='15' fill='#1a1a1a'>10: COIL 1+6 -&gt; PACK 1</text>
+<text x='545' y='790' text-anchor='start' font-family='sans-serif' font-size='15' fill='#1a1a1a'>2: COIL 3+4 -&gt; PACK 3</text>
+<text x='545' y='818' text-anchor='start' font-family='sans-serif' font-size='15' fill='#1a1a1a'>1: COIL 2+5 -&gt; PACK 2</text>
+<text x='745' y='734' text-anchor='start' font-family='sans-serif' font-size='15' fill='#e67e22'>T1 (pin 7) &lt;- IGT1</text>
+<text x='745' y='762' text-anchor='start' font-family='sans-serif' font-size='15' fill='#e67e22'>T2 (pin 6) &lt;- IGT2</text>
+<text x='745' y='790' text-anchor='start' font-family='sans-serif' font-size='15' fill='#e67e22'>T3 (pin 5) &lt;- IGT3</text>
+<text x='745' y='818' text-anchor='start' font-family='sans-serif' font-size='15' fill='#2471a3'>IGF (pin 4) -&gt; ECU</text>
+<text x='745' y='846' text-anchor='start' font-family='sans-serif' font-size='15' fill='#2471a3'>TAC (pin 8) -&gt; ECU</text>
+<line x1='850' y1='880' x2='850' y2='928' stroke='#1a1a1a' stroke-width='3'/>
+<line x1='827.0' y1='928' x2='873.0' y2='928' stroke='#1a1a1a' stroke-width='3'/>
+<line x1='835.0' y1='937' x2='865.0' y2='937' stroke='#1a1a1a' stroke-width='3'/>
+<line x1='843.0' y1='946' x2='857.0' y2='946' stroke='#1a1a1a' stroke-width='3'/>
+<text x='850' y='968' text-anchor='middle' font-family='sans-serif' font-size='13' fill='#1a1a1a'>GND -&gt; cyl head</text>
+<rect x='990' y='620' width='250' height='260' rx='10' fill='#ffffff' stroke='#333333' stroke-width='2.5'/>
+<text x='1115.0' y='656' text-anchor='middle' font-family='sans-serif' font-size='18' fill='#1a1a1a' font-weight='bold'>ECU</text>
+<text x='1115.0' y='678' text-anchor='middle' font-family='sans-serif' font-size='12.5' fill='#6e6e6e'>plug B1 (JZS161)</text>
+<line x1='940' y1='734' x2='990' y2='734' stroke='#e67e22' stroke-width='3'/>
+<text x='1000' y='739' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e67e22'>IGT1</text>
+<line x1='940' y1='762' x2='990' y2='762' stroke='#e67e22' stroke-width='3'/>
+<text x='1000' y='767' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e67e22'>IGT2</text>
+<line x1='940' y1='790' x2='990' y2='790' stroke='#e67e22' stroke-width='3'/>
+<text x='1000' y='795' text-anchor='start' font-family='sans-serif' font-size='14' fill='#e67e22'>IGT3</text>
+<line x1='940' y1='818' x2='990' y2='818' stroke='#2471a3' stroke-width='3'/>
+<text x='1000' y='823' text-anchor='start' font-family='sans-serif' font-size='14' fill='#2471a3'>IGF</text>
+<line x1='940' y1='846' x2='990' y2='846' stroke='#2471a3' stroke-width='3'/>
+<text x='1000' y='851' text-anchor='start' font-family='sans-serif' font-size='14' fill='#2471a3'>TAC</text>
+<rect x='1070' y='150' width='290' height='175' rx='10' fill='#ffffff' stroke='#333333' stroke-width='2'/>
+<text x='1215' y='180' text-anchor='middle' font-family='sans-serif' font-size='16' fill='#1a1a1a' font-weight='bold'>Wire colors</text>
+<line x1='1088' y1='204' x2='1128' y2='204' stroke='#d62728' stroke-width='4'/>
+<text x='1138' y='208' text-anchor='start' font-family='sans-serif' font-size='14' fill='#1a1a1a'>+B (12V switched)</text>
+<line x1='1088' y1='230' x2='1128' y2='230' stroke='#1a1a1a' stroke-width='4'/>
+<text x='1138' y='234' text-anchor='start' font-family='sans-serif' font-size='14' fill='#1a1a1a'>coil trigger (-ve)</text>
+<line x1='1088' y1='256' x2='1128' y2='256' stroke='#e67e22' stroke-width='4'/>
+<text x='1138' y='260' text-anchor='start' font-family='sans-serif' font-size='14' fill='#1a1a1a'>ECU IGT1 / 2 / 3</text>
+<line x1='1088' y1='282' x2='1128' y2='282' stroke='#2471a3' stroke-width='4'/>
+<text x='1138' y='286' text-anchor='start' font-family='sans-serif' font-size='14' fill='#1a1a1a'>IGF / TAC</text>
+<line x1='1088' y1='308' x2='1128' y2='308' stroke='#999999' stroke-width='4'/>
+<text x='1138' y='312' text-anchor='start' font-family='sans-serif' font-size='14' fill='#1a1a1a'>HT leads</text>
+<line x1='40' y1='956' x2='1360' y2='956' stroke='#cccccc' stroke-width='1'/>
+<text x='40' y='982' text-anchor='start' font-family='sans-serif' font-size='15' fill='#333333'>•  Packs sit on the valve cover in physical order 1 - 3 - 2, front to back (per 2jzgarage / IS300 manual). Each fires its wasted-spark pair.</text>
+<text x='40' y='1006' text-anchor='start' font-family='sans-serif' font-size='15' fill='#333333'>•  Factory +B splices at body-loom plug BF2 pin 6 -- the single starvation point for all three packs. T1/T2/T3 = igniter-body labels for ECU IGT1/2/3; coils fire on the falling edge (+5V -&gt; 0V).</text>
+<text x='40' y='1030' text-anchor='start' font-family='sans-serif' font-size='15' fill='#333333'>•  2-pin coil connectors carry +B and the switched -ve only -- no chassis-ground wire. Cavity orientation is undocumented: use the black/white wire + key-ON 12V check.</text>
+<text x='40' y='1054' text-anchor='start' font-family='sans-serif' font-size='15' fill='#333333'>•  DH61 (Lexus) and DS62 (Toyota) igniters are interchangeable. Igniter bay location not verified -- confirm on your car.</text>
 </svg>
