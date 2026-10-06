@@ -29,3 +29,7 @@ DerivedData/
 # Editors
 .vscode/
 .idea/
+
+# Chat-delivery copies of the verified diagram (versioned filenames dodge the
+# chat client's attachment cache; the canonical files are committed above)
+vehicles/aristo-v300/DH61_igniter_v*.png
